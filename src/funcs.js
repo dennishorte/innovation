@@ -13,8 +13,15 @@ module.exports = {
     ])
   },
 
-  test(context, { count }) {
-    console.log('test')
-    return 'potato x' + count
+  test(context) {
+    return context.steps([
+      (context, data) => {
+        return context.breakPoint('test')
+      },
+      (context, { count }) => {
+        console.log('test')
+        return 'potato x' + count
+      }
+    ])
   },
 }

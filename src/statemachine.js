@@ -13,6 +13,7 @@ function StackFrame(name, kwargs) {
 
 function StateMachine() {
   this.frames = []
+  this.breakPoints = []
   this.debug = true
 }
 
@@ -21,6 +22,13 @@ StateMachine.prototype.assign = function(name, funcName, kwargs) {
   util.assert(frame.data[name] === undefined, 'Frame data is const. Cannot overwrite it.')
   frame.toAssign = name
   this.push(funcName, kwargs)
+}
+
+// Useful for stopping execution in order to setup tests.
+StateMachine.prototype.breakPoint = function(name) {
+  if (this.breakPoints.includes(name)) {
+    return '__break__'
+  }
 }
 
 StateMachine.prototype.steps = function(steps) {
@@ -66,13 +74,17 @@ StateMachine.prototype.run = function() {
   while (true) {
     const frame = this.top()
 
+    let result
     if (frame.mode === 'steps') {
-      this._runStep(frame)
+      result = this._runStep(frame)
     }
     else {
-      this._runStandard(frame)
+      result = this._runStandard(frame)
     }
 
+    if (result === '__break__') {
+      break
+    }
   }
 }
 
@@ -94,10 +106,20 @@ StateMachine.prototype._eval = function(fn) {
   return fn(this, this._collectData())
 }
 
-StateMachine.prototype._frameComplete = function() {
+StateMachine.prototype._frameComplete = function(prevResult) {
+  if (prevResult === '__wait__') {
+    return
+  }
+
   this.frames.pop()
   if (this.frames.length === 0) {
     throw 'Finished'
+  }
+
+  const top = this.top()
+  if (top.toAssign) {
+    top.data[top.toAssign] = prevResult
+    top.toAssign = ''
   }
 }
 
@@ -117,33 +139,25 @@ StateMachine.prototype._runStandard = function(frame) {
 
   const result = this._eval(func)
   this._log('returned: ' + result)
-
-  if (result !== '__wait__') {
-    this._frameComplete()
-  }
-
-  const top = this.top()
-  if (top.toAssign) {
-    top.data[top.toAssign] = result
-    top.toAssign = ''
-  }
+  return this._frameComplete(result)
 }
 
 StateMachine.prototype._runStep = function(frame) {
   frame.stepIndex += 1
   const steps = funcs[frame.name](this)
 
-  if (frame.stepIndex >= steps.length) {
-    this._frameComplete()
-    return
-  }
-
   this._log(`Running frame ${frame.name}, step ${frame.stepIndex}`)
   const step = steps[frame.stepIndex]
   const result = this._eval(step)
   this._log(`returned: ${result}`)
+
+  // This was the last frame
+  if (frame.stepIndex === steps.length - 1) {
+    return this._frameComplete(result)
+  }
 }
 
 
 const sm = new StateMachine()
+sm.run()
 sm.run()
