@@ -43,21 +43,6 @@ StateMachine.prototype.steps = function(steps) {
   }
 }
 
-/* StateMachine.prototype.getFunc = function(frame) {
- *   const [name, meta] = frame.name.split('.')
- *
- *   if (meta === undefined) {
- *     return funcs[frame.name]
- *   }
- *   else if (meta === 'execute') {
- *     frame.data.__step += 1
- *     const execute = funcs[frame.name].steps[frame.data.__step += 1]
- *   }
- *   else {
- *     throw new Error(`Unknown func meta: ${meta}`)
- *   }
- * }
- *  */
 StateMachine.prototype.push = function(funcName, kwargs) {
   util.assert(kwargs !== undefined)
   util.assert(kwargs !== null)
@@ -86,6 +71,13 @@ StateMachine.prototype.run = function() {
       break
     }
   }
+}
+
+// Similar to assign, but instead of a function, user input provides the value.
+StateMachine.prototype.select = function(name, selector) {
+  frame.selector = selector
+  frame.response = ''
+  return '__select__'
 }
 
 StateMachine.prototype.top = function() {
