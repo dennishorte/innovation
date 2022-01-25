@@ -66,6 +66,15 @@ Util.assert = function(test, message) {
   }
 }
 
+Util.inherit = function(parent, child) {
+  child.prototype = Object.create(parent.prototype)
+  Object.defineProperty(child.prototype, 'constructor', {
+    value: child,
+    enumerable: false,
+    writable: true
+  })
+}
+
 Util.toCamelCase = function(str) {
   const downCased = str[0].toLowerCase() + str.slice(1)
   return downCased.replace(/\W/g, '')
