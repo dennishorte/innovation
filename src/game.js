@@ -50,13 +50,74 @@ function GameOverEvent(data) {
   this.data = data
 }
 
-function InputRequestEvent(selector) {
-  this.selector = selector
+function InputRequestEvent(selectors) {
+  if (!Array.isArray(selectors)) {
+    selectors = [selectors]
+  }
+  this.selectors = selectors
 }
 
-Game.prototype.setInputRequestKey = function(event) {
-  this.key = this.random.int32()
-  event.key = this.key
+Game.prototype.serialize = function() {
+  return {
+    settings: this.settings,
+    responses: this.responses,
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Custom Errors
+
+function DuplicateResponseError(msg) {
+  Error.call(this, msg)
+}
+util.inherit(Error, DuplicateResponseError)
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Input Requests / Responses
+
+Game.prototype.requestInputMany = function(array) {
+  if (!Array.isArray(array)) {
+    array = [array]
+  }
+
+  const responses = []
+  while (responses.length < array.length) {
+    const resp = this._getResponse()
+    if (responseIsDuplicate(responses, resp)) {
+      throw new DuplicateResponseError(`Duplicate response from ${resp.actor}`)
+    }
+    else if (resp) {
+      responses.push(resp)
+    }
+    else {
+      const unanswered = array.filter(request => !responses.find(r => r.actor === request.actor))
+      throw new InputRequestEvent(unanswered)
+    }
+  }
+  return responses
+}
+
+Game.prototype.requestInputSingle = function(selector) {
+  const results = this.requestInputMany([selector])
+  util.assert(results.length === 1, `Got back ${results.length} responses from requestInputSingle.`)
+  return results[0].selection
+}
+
+Game.prototype.respondToInputRequest = function(response) {
+  util.assert(response.key === this.key, "Invalid response. State has updated.")
+  this.responses.push(response)
+
+  try {
+    return this.run()
+  }
+  catch (e) {
+    if (e instanceof DuplicateResponseError) {
+      this.responses.pop()
+    }
+    throw e
+  }
 }
 
 Game.prototype.run = function() {
@@ -66,7 +127,7 @@ Game.prototype.run = function() {
   }
   catch (e) {
     if (e instanceof InputRequestEvent) {
-      this.setInputRequestKey(e)
+      e.key = this._setInputRequestKey()
       return e
     }
     else if (e instanceof GameOverEvent) {
@@ -78,16 +139,32 @@ Game.prototype.run = function() {
   }
 }
 
-Game.prototype.respondToInputRequest = function(response) {
-  util.assert(response.key === this.key, "Invalid response. State has updated.")
-  this.responses.push(response)
-  return this.run()
+Game.prototype.undo = function() {
+  // First, see if there is response from this user to the current request key.
+  if (this._undoMostRecent(this.key)) {
+    return
+  }
+
+  // Second, see if there is a response from this user to the most recent response's key.
+  // Sometimes this is the same as above, but usually it is different.
+  if (this._undoMostRecent(this.responses[this.responses.length - 1].key)) {
+    return
+  }
+
+  // Undo all responses to the last submitted key.
+  const latest = util.array.takeRightWhile(this.responses, resp => resp.key === lastKey)
+  for (let i = 0; i < latest.length; i++) {
+    this.responses.pop()
+  }
 }
 
-Game.prototype.serialize = function() {
-  return {
-    settings: this.settings,
-    responses: this.responses,
+Game.prototype._undoMostRecent = function(key) {
+  const recentResponses = util.array.takeRightWhile(this.responses, resp => resp.key === key)
+  const recentMatch = currentResponses.find(resp => resp.actor === this.viewerName)
+  if (recentMatch) {
+    const index = this.responses.findIndex(resp => resp === recentMatch)
+    this.responses.splice(index, 1)
+    return true
   }
 }
 
@@ -130,4 +207,22 @@ Game.prototype._reset = function() {
   this.key = 0
   this.random = seedrandom(this.settings.seed)
   this.state = this._blankState()
+}
+
+Game.prototype._setInputRequestKey = function() {
+  this.key = this.random.int32()
+  return this.key
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// non-class methods
+
+function responseIsDuplicate(responses, r) {
+  if (!r) {
+    return false
+  }
+
+  const possibleDuplicates = util.array.takeRightWhile(responses, x => x.key === r.key)
+  return possibleDuplicates.some(x => x.actor === r.actor)
 }

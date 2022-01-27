@@ -58,6 +58,7 @@ Innovation.prototype.initializeTransientState = function() {
 Innovation.prototype.initializePlayers = function() {
   this.state.players = this.settings.players.map(p => ({
     _id: p._id,
+    id: p.name,
     name: p.name,
     team: p.name,
   }))
@@ -190,7 +191,15 @@ Innovation.prototype.initializeStartingCards = function() {
 // Primary game logic
 
 Innovation.prototype.firstPicks = function() {
-  console.log('firstPicks')
+  const requests = this
+    .getPlayerAll()
+    .map(p => ({
+      actor: this.utilSerializeObject(p),
+      title: 'Choose First Card',
+      choices: this.getZoneByPlayer(p, 'hand').cards.map(this.utilSerializeObject),
+    }))
+
+  const picks = this.requestInput(requests)
 }
 
 Innovation.prototype.mainLoop = function() {
@@ -364,4 +373,17 @@ Game.prototype.utilSeparateByAge = function(cards) {
     }
   }
   return byAge
+}
+
+Game.prototype.utilSerializeObject = function(obj) {
+  if (typeof obj === 'object') {
+    util.assert(obj.id !== undefined, 'Object has no id. Cannot serialize.')
+    return obj.id
+  }
+  else if (type ofj === 'string') {
+    return obj
+  }
+  else {
+    throw new Error(`Cannot serialize element of type ${typeof obj}`)
+  }
 }

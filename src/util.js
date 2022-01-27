@@ -56,6 +56,32 @@ Util.array.swap = function(array, i, j) {
   array[j] = tmp
 }
 
+Util.array.takeRightWhile = function(array, predicate) {
+  const accumulator = []
+  for (let i = array.length - 1; i >= 0; i--) {
+    if (predicate(array[i])) {
+      accumulator.push(array[i])
+    }
+    else {
+      break
+    }
+  }
+  return accumulator.reverse()
+}
+
+Util.array.takeWhile = function(array, predicate) {
+  const accumulator = []
+  for (let i = 0; i < array.length; i++) {
+    if (predicate(array[i])) {
+      accumulator.push(array[i])
+    }
+    else {
+      break
+    }
+  }
+  return accumulator
+}
+
 Util.array.toDict = function(array, f) {
   return Object.assign({}, ...array.map(x => f(x)))
 }
