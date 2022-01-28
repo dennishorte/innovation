@@ -562,6 +562,14 @@ Innovation.prototype.getZoneByPlayer = function(player, name) {
 // Setters
 
 Innovation.prototype.mDraw = function(player, exp, age) {
+  if (age > 10) {
+    throw new GameOverEvent({
+      reason: 'high draw',
+      player,
+      age,
+    })
+  }
+
   const source = this.getZoneByDeck(exp, age)
   const hand = this.getZoneByPlayer(player, 'hand')
   const card = this.mMoveTopCard(source, hand)

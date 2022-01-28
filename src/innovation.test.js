@@ -178,6 +178,15 @@ describe('Innovation', () => {
         expect(dennisCards.length).toBe(2)
         expect(dennisCards.map(c => c.age).sort()).toStrictEqual([1, 9])
       })
+
+      test('draw an 11 ends the game', () => {
+        const game = t.fixtureFirstPlayer()
+        game.run()
+        const trigger = () => {
+          game.mDraw(game.getPlayerByName('dennis'), 'base', 11)
+        }
+        expect(trigger).toThrow(GameOverEvent)
+      })
     })
   })
 })
