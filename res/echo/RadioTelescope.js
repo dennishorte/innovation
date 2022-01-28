@@ -1,18 +1,18 @@
 const CardBase = require(`../CardBase.js`)
 
 function Card() {
-  this.id = `Bangle`  // Card names are unique in Innovation
-  this.name = `Bangle`
-  this.color = `red`
-  this.age = 1
+  this.id = `Radio Telescope`  // Card names are unique in Innovation
+  this.name = `Radio Telescope`
+  this.color = `blue`
+  this.age = 8
   this.expansion = `echo`
-  this.biscuits = `hk&1`
-  this.dogmaBiscuit = `k`
+  this.biscuits = `hsss`
+  this.dogmaBiscuit = `s`
   this.inspire = ``
-  this.echo = `Tuck a red card from your hand.`
+  this.echo = ``
   this.karma = []
   this.dogma = [
-    `Draw and foreshadow a {2}.`
+    `For every two {s} on your board, draw a {9}. Meld one of the cards drawn and return the rest. If you meld AI due to this dogma effect, you win.`
   ]
 
   this.dogmaImpl = []

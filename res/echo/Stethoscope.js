@@ -1,18 +1,19 @@
 const CardBase = require(`../CardBase.js`)
 
 function Card() {
-  this.id = `Bangle`  // Card names are unique in Innovation
-  this.name = `Bangle`
-  this.color = `red`
-  this.age = 1
+  this.id = `Stethoscope`  // Card names are unique in Innovation
+  this.name = `Stethoscope`
+  this.color = `blue`
+  this.age = 6
   this.expansion = `echo`
-  this.biscuits = `hk&1`
-  this.dogmaBiscuit = `k`
+  this.biscuits = `s&sh`
+  this.dogmaBiscuit = `s`
   this.inspire = ``
-  this.echo = `Tuck a red card from your hand.`
+  this.echo = `Meld a blue or yellow card from your hand.`
   this.karma = []
   this.dogma = [
-    `Draw and foreshadow a {2}.`
+    `Draw a {7}. If you melded a blue card due to Stethoscope's echo effect, draw an {8}.`,
+    `You may splay your yellow cards right.`
   ]
 
   this.dogmaImpl = []
