@@ -39,8 +39,6 @@ Innovation.prototype._gameOver = function() {
 // Initialization
 
 Innovation.prototype.initialize = function() {
-  console.log('initialize')
-
   this.initializePlayers()
   this.initializeTeams()
   this.initializeZones()
@@ -91,6 +89,15 @@ Innovation.prototype.initializeZones = function() {
     cards: [],
     kind: 'public',
   }
+
+  // Set an id that can be used to quickly fetch a zone.
+  this._walkZones(this.state.zones, (zone, path) => {
+    zone.id = path.join('.')
+    for (const card of zone.cards) {
+      card.home = zone.id
+      card.zone = zone.id
+    }
+  })
 }
 
 Innovation.prototype.initializeZonesDecks = function() {
@@ -106,10 +113,11 @@ Innovation.prototype.initializeZonesDecks = function() {
       else if (!Array.isArray(cards)) {
         throw new Error(`Cards for ${exp}-${age} is of type ${typeof cards}`)
       }
-      util.array.shuffle(cards)
+      const cardsCopy = [...cards]
+      util.array.shuffle(cardsCopy)
       zones.decks[exp][age] = {
         name: `decks.${exp}.${age}`,
-        cards,
+        cards: cardsCopy,
         kind: 'deck',
       }
     }
@@ -127,14 +135,14 @@ Innovation.prototype.initializeZonesAchievements = function() {
 
   // Standard achievements
   for (const age of [1,2,3,4,5,6,7,8,9]) {
-    this.mMoveTopCard(this.getZoneByDeck('base', age), this.getZoneByName('achievements'))
+    this.mMoveTopCard(this.getZoneByDeck('base', age), this.getZoneById('achievements'))
   }
 
   // Special achievements
   for (const exp of ['base', 'echo', 'figs', 'city', 'arti']) {
     if (this.getExpansionList().includes(exp)) {
       for (const ach of res[exp].achievements) {
-        zones.achievements.cards.push(ach.id)
+        zones.achievements.cards.push(ach)
       }
     }
   }
@@ -199,16 +207,30 @@ Innovation.prototype.firstPicks = function() {
       choices: this.getZoneByPlayer(p, 'hand').cards.map(this.utilSerializeObject),
     }))
 
-  const picks = this.requestInput(requests)
+  const picks = this
+    .requestInputMany(requests)
+    .map(resp => [
+      this.getPlayerByName(resp.actor),
+      this.getCardByName(resp.selection[0])
+    ])
+    .sort((l, r) => l[1].name.localeCompare(r[1].name))
+  for (const [player, card] of picks) {
+    this.mMeldCard(player, card)
+  }
+
+  this.state.currentPlayer = picks[0][0]
 }
 
 Innovation.prototype.mainLoop = function() {
-  console.log('mainLoop')
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Getters
+
+Innovation.prototype.getCardByName = function(name) {
+  return res.all.byName[name]
+}
 
 Innovation.prototype.getExpansionList = function() {
   return this.settings.expansions
@@ -226,12 +248,36 @@ Innovation.prototype.getPlayerAll = function() {
   return this.state.players
 }
 
+Innovation.prototype.getPlayerCurrent = function() {
+  return this.state.currentPlayer
+}
+
+Innovation.prototype.getPlayerByName = function(name) {
+  const player = this.getPlayerAll().find(p => p.name === name)
+  util.assert(!!player, `Player with name '${name}' not found.`)
+  return player
+}
+
+Innovation.prototype.getZoneByCard = function(card) {
+  return this.getZoneById(card.zone)
+}
+
+Innovation.prototype.getZoneByCardHome = function(card) {
+  return this.getZoneById(card.home)
+}
+
 Innovation.prototype.getZoneByDeck = function(exp, age) {
   return this.state.zones.decks[exp][age]
 }
 
-Innovation.prototype.getZoneByName = function(name) {
-  return this.state.zones[name]
+Innovation.prototype.getZoneById = function(id) {
+  const tokens = id.split('.')
+  let curr = this.state.zones
+  for (const token of tokens) {
+    util.assert(curr.hasOwnProperty(token), `Invalid zone id ${id} at token ${token}`)
+    curr = curr[token]
+  }
+  return curr
 }
 
 Innovation.prototype.getZoneByPlayer = function(player, name) {
@@ -252,13 +298,37 @@ Innovation.prototype.mDraw = function(player, exp, age) {
   })
 }
 
+Innovation.prototype.mMeldCard = function(player, card) {
+  const source = this.getZoneByCard(card)
+  const target = this.getZoneByPlayer(player, card.color)
+  const sourceIndex = source.cards.indexOf(card)
+
+  this.mMoveByIndices(source, sourceIndex, target, 0)
+  this.mLog({
+    template: '{player} melds {card}',
+    args: { player, card }
+  })
+}
+
 Innovation.prototype.mMoveByIndices = function(source, sourceIndex, target, targetIndex) {
+  util.assert(sourceIndex >= 0 && sourceIndex <= source.cards.length - 1, `Invalid source index ${sourceIndex}`)
   const sourceCards = source.cards
   const targetCards = target.cards
   const card = sourceCards[sourceIndex]
   sourceCards.splice(sourceIndex, 1)
   targetCards.splice(targetIndex, 0, card)
+  card.zone = target.id
   return card
+}
+
+Innovation.prototype.mMoveCardTo = function(card, target) {
+  if (card.zone === target.id) {
+    // Card is already in the target zone.
+    return
+  }
+  const source = this.getZoneByCard(card)
+  const sourceIndex = source.cards.findIndex(c => c === card)
+  return this.mMoveByIndices(source, sourceIndex, target, target.cards.length)
 }
 
 Innovation.prototype.mMoveTopCard = function(source, target) {
@@ -299,6 +369,27 @@ Innovation.prototype.mResetMonumentCounts = function() {
   this.state.monument = util.array.toDict(this.getPlayerAll(), p => {
     return { [p.name]: { tuck: 0, score: 0 } }
   })
+}
+
+Innovation.prototype.mReturnCard = function(player, card, opts) {
+  opts = opts || {}
+  const source = this.getZoneByCard(card)
+  const target = this.getZoneByCardHome(card)
+  const sourceIndex = source.cards.indexOf(card)
+  const targetIndex = target.cards.length
+
+  util.assert(sourceIndex !== -1, 'Did not find card in its supposed source.')
+
+  this.mMoveByIndices(source, sourceIndex, target, targetIndex)
+
+  if (!opts.silent) {
+    this.mLog({
+      template: '{player} returns {card}',
+      args: { player, card }
+    })
+  }
+
+  return card
 }
 
 
@@ -380,10 +471,25 @@ Game.prototype.utilSerializeObject = function(obj) {
     util.assert(obj.id !== undefined, 'Object has no id. Cannot serialize.')
     return obj.id
   }
-  else if (type ofj === 'string') {
+  else if (typeof obj === 'string') {
     return obj
   }
   else {
     throw new Error(`Cannot serialize element of type ${typeof obj}`)
+  }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Private functions
+
+Innovation.prototype._walkZones = function(root, fn, path=[]) {
+  for (const [key, obj] of Object.entries(root)) {
+    const thisPath = [...path, key]
+    if (obj.cards) {
+      fn(obj, thisPath)
+    }
+    else {
+      this._walkZones(obj, fn, thisPath)
+    }
   }
 }

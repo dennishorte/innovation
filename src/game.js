@@ -216,6 +216,19 @@ Game.prototype._setInputRequestKey = function() {
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// Test only methods
+
+Game.prototype.testSetBreakpoint = function(name, fn) {
+  if (this.breakpoints.hasOwnProperty(name)) {
+    this.breakpoints[name].push(fn)
+  }
+  else {
+    this.breakpoints[name] = [fn]
+  }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 // non-class methods
 
 function responseIsDuplicate(responses, r) {
