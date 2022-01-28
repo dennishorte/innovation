@@ -82,8 +82,12 @@ Util.array.takeWhile = function(array, predicate) {
   return accumulator
 }
 
-Util.array.toDict = function(array, f) {
-  return Object.assign({}, ...array.map(x => f(x)))
+Util.array.toDict = function(array) {
+  const dict = {}
+  for (const [key, value] of array) {
+    dict[key] = value
+  }
+  return dict
 }
 
 Util.assert = function(test, message) {

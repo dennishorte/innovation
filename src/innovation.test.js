@@ -24,6 +24,18 @@ describe('fixture', () => {
       .sort()
     expect(micah).toStrictEqual(['Code of Laws', 'Mysticism'])
   })
+
+  test('setColor', () => {
+    const game = t.fixtureFirstPlayer()
+    game.testSetBreakpoint('before-first-player', (game) => {
+      t.setColor(game, 'dennis', 'red', ['Gunpowder', 'Industrialization'])
+    })
+    game.run()
+    const dennis = game.getPlayerByName('dennis')
+
+    const redCardNames = game.getZoneByPlayer(dennis, 'red').cards.map(c => c.name).sort()
+    expect(redCardNames).toStrictEqual(['Gunpowder', 'Industrialization'])
+  })
 })
 
 describe('Innovation', () => {
@@ -116,6 +128,56 @@ describe('Innovation', () => {
       })
 
       expect(game.getPlayerCurrent().name).toBe('micah')
+    })
+  })
+
+  describe('actions', () => {
+    describe('first player gets only one action', () => {
+      test('two players', () => {
+
+      })
+
+      test('three players', () => {
+
+      })
+
+      test('four players', () => {
+
+      })
+    })
+
+    describe('draw action', () => {
+      test('player draws a card based on top card age (test 1)', () => {
+        const game = t.fixtureFirstPlayer()
+        const request = game.run()
+        const dennis = game.getPlayerByName('dennis')
+
+        expect(game.getZoneByPlayer(dennis, 'hand').cards.length).toBe(1)
+
+        t.choose(game, request, 'Draw.draw a card')
+
+        const dennisCards = game.getZoneByPlayer(dennis, 'hand').cards
+        expect(dennisCards.length).toBe(2)
+        expect(dennisCards.map(c => c.age).sort()).toStrictEqual([1, 1])
+      })
+
+      test('player draws a card based on top card age (test 2)', () => {
+        const game = t.fixtureFirstPlayer()
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.setColor(game, 'dennis', 'purple', ['Specialization'])
+        })
+
+        const request = game.run()
+        const dennis = game.getPlayerByName('dennis')
+
+        expect(game.getZoneByPlayer(dennis, 'hand').cards.length).toBe(1)
+
+        t.choose(game, request, 'Draw.draw a card')
+
+        const dennisCards = game.getZoneByPlayer(dennis, 'hand').cards
+        expect(dennisCards.length).toBe(2)
+        expect(dennisCards.map(c => c.age).sort()).toStrictEqual([1, 9])
+      })
     })
   })
 })
