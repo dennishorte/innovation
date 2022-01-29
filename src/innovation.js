@@ -327,8 +327,16 @@ Innovation.prototype.action = function(count) {
   const name = chosenAction.name
   const arg = chosenAction.selection[0]
 
-  if (name === 'Draw') {
+  if (name === 'Dogma') {
+    const card = this.getCardByName(arg)
+    this.aDogma(player, card)
+  }
+  else if (name === 'Draw') {
     this.aDraw(player)
+  }
+  else if (name === 'Meld') {
+    const card = this.getCardByName(arg)
+    this.aMeld(player, card)
   }
   else {
     throw new Error(`Unhandled action type ${name}`)
@@ -363,15 +371,51 @@ Innovation.prototype.endTurn = function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Actions
 
-Innovation.prototype.aDogma = function(player, card, opts) {
+Innovation.prototype.aCardEffects = function(
+  player,
+  card,
+  kind,
+  biscuits,
+  sharing=[],
+  demanding=[]
+) {
+  const leader = this.getPlayerCurrent()
+
+  for (let i = 0; i < card[kind].length; i++) {
+    const effectText = card[kind][i]
+    const effectImpl = card[`${kind}Impl`][i]
+    const isDemand = effectText.startsWith('I demand')
+
+    if (isDemand && demanding.includes(player)) {
+      this.mLog({
+        template: 'Demands are made of {player}',
+        args: { player }
+      })
+      effectImpl(this, player)
+    }
+    else if (!isDemand && sharing.includes(player)) {
+      this.mLog({
+        template: 'Effect is shared with {player}',
+        args: { player }
+      })
+      effectImpl(this, player)
+    }
+    else if (player === leader) {
+      effectImpl(this, player)
+    }
+  }
+}
+
+Innovation.prototype.aDogma = function(player, card, opts={}) {
   this.mLog({
     template: '{player} activates the dogma effects of {card}',
     args: { player, card }
   })
+  this.mLogIndent()
 
   this.state.shared = false
 
-  const color = this.getZoneByPlayer(player, color)
+  const color = this.getZoneByPlayer(player, card.color)
 
   // Store the biscuits now because changes caused by the dogma action should
   // not affect the number of biscuits used for evaluting the effect.
@@ -381,20 +425,26 @@ Innovation.prototype.aDogma = function(player, card, opts) {
   // should not affect which effects are executed.
   const effectCards = color
     .cards
-    .filter(card => card.echoIsVisible(color.splay))
+    .filter(card => card.checkEchoIsVisible(color.splay))
     .reverse()  // Start from the bottom of the stack when executing effects
-
 
   if (opts.artifact) {
     // Artifact biscuits are used only when taking the free dogma action.
     const extraBiscuits = this.getBiscuitsByCard(card)
     biscuits[player.name] = this.utilCombineBiscuits(biscuits[player.name], extraBiscuits)
+  }
 
-    // This card is treated as being on top of the stack.
+  // Regardless of normal dogma or artifact dogma, the selected card is executed last.
+  if (card.dogma.length > 0) {
     effectCards.push(card)
   }
 
   for (const ecard of effectCards) {
+    this.mLog({
+      template: 'Evaluating {card}',
+      args: { card: ecard, }
+    })
+
     for (const player of this.getPlayersStartingNext()) {
       this.aCardEffects(player, ecard, 'echo', biscuits)
 
@@ -410,6 +460,8 @@ Innovation.prototype.aDogma = function(player, card, opts) {
   if (this.state.shared) {
     this.aDraw(player, { share: true })
   }
+
+  this.mLogOutdent()
 }
 
 Innovation.prototype.aDraw = function(player, opts={}) {
@@ -491,12 +543,12 @@ Innovation.prototype.getBiscuitsByPlayer = function(player) {
     .utilColors()
     .map(color => this.getZoneByPlayer(player, color))
     .map(zone => this.getBiscuitsByZone(zone))
-    .reduce(this.utilCombineBiscuits)
+    .reduce((l, r) => this.utilCombineBiscuits(l, r))
 
   return this
     .getCardsByKarmaTrigger(player, 'calculate-biscuits')
     .map(card => this.utilApplyKarma(card, 'calculate-biscuits', this, player, board))
-    .reduce(this.utilCombineBiscuits, boardBiscuits)
+    .reduce((l, r) => this.utilCombineBiscuits(l, r), boardBiscuits)
 }
 
 Innovation.prototype.getBiscuitsByCard = function(card) {
@@ -507,8 +559,8 @@ Innovation.prototype.getBiscuitsByZone = function(zone) {
   return zone
     .cards
     .map(card => this.getBiscuitsRaw(card, zone.splay))
-    .map(this.utilParseBiscuits)
-    .reduce(this.utilCombineBiscuits)
+    .map(biscuitString => this.utilParseBiscuits(biscuitString))
+    .reduce((l, r) => this.utilCombineBiscuits(l, r), this.utilEmptyBiscuits())
 }
 
 Innovation.prototype.getBiscuitsRaw = function(card, splay) {
@@ -520,6 +572,12 @@ Innovation.prototype.getBiscuitsRaw = function(card, splay) {
 Innovation.prototype.getCardByName = function(name) {
   util.assert(res.all.byName.hasOwnProperty(name), `Unknown card: ${name}`)
   return res.all.byName[name]
+}
+
+Innovation.prototype.getCardsByKarmaTrigger = function(player, trigger) {
+  return this
+    .getTopCards(player)
+    .filter(card => card.hasKarma(trigger))
 }
 
 Innovation.prototype.getExpansionList = function() {
@@ -567,6 +625,24 @@ Innovation.prototype.getPlayerByName = function(name) {
   return player
 }
 
+// Return an array of all players, starting with the player who will follow the current player.
+// Commonly used when evaluating effects
+Innovation.prototype.getPlayersStartingNext = function() {
+  const players = [...this.getPlayerAll()]
+  while (players[players.length - 1] !== this.getPlayerCurrent()) {
+    players.push(players.shift())
+  }
+  return players
+}
+
+Innovation.prototype.getTopCards = function(player) {
+  return this
+    .utilColors()
+    .map(color => this.getZoneByPlayer(player, color))
+    .map(zone => zone.cards[0])
+    .filter(card => card !== undefined)
+}
+
 Innovation.prototype.getZoneByCard = function(card) {
   return this.getZoneById(card.zone)
 }
@@ -596,6 +672,12 @@ Innovation.prototype.getZoneByPlayer = function(player, name) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Setters
+
+Innovation.prototype.mActed = function(player) {
+  if (this.state.initializationComplete) {
+    this.state.dogmaInfo[player.name].acted = true
+  }
+}
 
 Innovation.prototype.mAdjustCardVisibility = function(card) {
   if (!this.state.initializationComplete) {
@@ -646,6 +728,10 @@ Innovation.prototype.mDraw = function(player, exp, age, opts={}) {
       args: { player, card }
     })
   }
+
+  this.mActed(player)
+
+  return card
 }
 
 Innovation.prototype.mMeld = function(player, card) {
@@ -658,6 +744,8 @@ Innovation.prototype.mMeld = function(player, card) {
     template: '{player} melds {card}',
     args: { player, card }
   })
+
+  this.mActed(player)
 }
 
 Innovation.prototype.mMoveByIndices = function(source, sourceIndex, target, targetIndex) {
@@ -750,14 +838,18 @@ Innovation.prototype.mReturn = function(player, card, opts) {
     })
   }
 
+  this.mActed(player)
+
   return card
 }
 
 Innovation.prototype.mReveal = function(player, card) {
+  card.visibility = this.getPlayerAll().map(p => p.name)
   this.mLog({
     template: '{player} reveals {card}',
     args: { player, card }
   })
+  this.mActed(player)
 }
 
 

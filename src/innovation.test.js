@@ -190,7 +190,65 @@ describe('Innovation', () => {
     })
   })
 
-  describe('logs', () => {
+  describe('meld action', () => {
+    test('card goes on top', () => {
+
+    })
+
+    test('forecast', () => {
+
+    })
+
+    test('achievement trigger', () => {
+
+    })
+
+    describe.skip('cities', () => {
+      test('draw a city for first card of color', () => {
+
+      })
+
+      test('plus icon', () => {
+
+      })
+
+      test('splay left icon', () => {
+
+      })
+
+      test('splay right icon', () => {
+
+      })
+
+      test('splay up icon', () => {
+
+      })
+
+      test('biscuit', () => {
+
+      })
+    })
+
+    describe.skip('artifacts', () => {
+      test('hex position matching', () => {
+
+      })
+
+      test('same age', () => {
+
+      })
+
+      test('lower age', () => {
+
+      })
+
+      test('higher age (no trigger)', () => {
+
+      })
+    })
+  })
+
+  describe.skip('logs', () => {
     test('card not visible', () => {
       const game = t.fixtureFirstPlayer()
       const request = game.run()

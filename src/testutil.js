@@ -91,6 +91,15 @@ TestUtil.fixtureFirstPlayer = function(options) {
   return game
 }
 
+TestUtil.fixtureTopCard = function(cardName, options) {
+  const game = TestUtil.fixtureFirstPlayer(options)
+  game.testSetBreakpoint('before-first-player', (game) => {
+    const card = game.getCardByName(cardName)
+    TestUtil.setColor(game, game.getPlayerCurrent().name, card.color, [cardName])
+  })
+  return game
+}
+
 TestUtil.choose = function(game, request, ...selections) {
   const selector = request.selectors[0]
   selections = selections.map(string => {

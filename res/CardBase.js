@@ -66,6 +66,10 @@ CardBase.prototype.getBiscuits = function(splay) {
   }
 }
 
+CardBase.prototype.hasKarma = function(trigger) {
+  return this.karmaImpl.some(k => k.trigger === trigger)
+}
+
 CardBase.prototype.getImpl = function(kind) {
   if (kind.startsWith('karma')) {
     kind = kind.substr(6)
