@@ -14,15 +14,16 @@ module.exports = {
 }
 
 
-function Innovation(serialized_data) {
+function Innovation(serialized_data, viewerName) {
   Game.call(this, serialized_data)
+  this.viewerName = viewerName
 }
 
 util.inherit(Game, Innovation)
 
-function InnovationFactory(settings) {
+function InnovationFactory(settings, viewerName) {
   const data = GameFactory(settings)
-  return new Innovation(data)
+  return new Innovation(data, viewerName)
 }
 
 Innovation.prototype._mainProgram = function() {
@@ -39,12 +40,18 @@ Innovation.prototype._gameOver = function() {
 // Initialization
 
 Innovation.prototype.initialize = function() {
+  this.mLog({ template: 'Initializing' })
+  this.mLogIndent()
+
   this.initializePlayers()
   this.initializeTeams()
   this.initializeZones()
   this.initializeStartingCards()
   this.initializeTransientState()
 
+  this.mLogOutdent()
+
+  this.state.initializationComplete = true
   this._breakpoint('initialization-complete')
 }
 
@@ -98,6 +105,7 @@ Innovation.prototype.initializeZones = function() {
     for (const card of zone.cards) {
       card.home = zone.id
       card.zone = zone.id
+      card.visibility = []
     }
   })
 }
@@ -132,12 +140,14 @@ Innovation.prototype.initializeZonesAchievements = function() {
   zones.achievements = {
     name: 'achievements',
     cards: [],
-    kind: 'public',
+    kind: 'achievements'
   }
 
   // Standard achievements
   for (const age of [1,2,3,4,5,6,7,8,9]) {
-    this.mMoveTopCard(this.getZoneByDeck('base', age), this.getZoneById('achievements'))
+    const ageZone = this.getZoneByDeck('base', age)
+    const achZone = this.getZoneById('achievements')
+    const card = this.mMoveTopCard(ageZone, achZone)
   }
 
   // Special achievements
@@ -168,7 +178,7 @@ Innovation.prototype.initializeZonesPlayers = function() {
     _addPlayerZone(player, 'hand', 'private', root)
     _addPlayerZone(player, 'score', 'private', root)
     _addPlayerZone(player, 'forecast', 'private', root)
-    _addPlayerZone(player, 'achievements', 'public', root)
+    _addPlayerZone(player, 'achievements', 'achievements', root)
     _addPlayerZone(player, 'red', 'public', root)
     _addPlayerZone(player, 'blue', 'public', root)
     _addPlayerZone(player, 'green', 'public', root)
@@ -185,13 +195,13 @@ Innovation.prototype.initializeZonesPlayers = function() {
 
 Innovation.prototype.initializeStartingCards = function() {
   for (const player of this.getPlayerAll()) {
-    this.mDraw(player, 'base', 1)
+    this.mDraw(player, 'base', 1, { silent: true })
 
     if (this.getExpansionList().includes('echo')) {
-      this.mDraw(player, 'echo', 1)
+      this.mDraw(player, 'echo', 1, { silent: true })
     }
     else {
-      this.mDraw(player, 'base', 1)
+      this.mDraw(player, 'base', 1, { silent: true })
     }
   }
 }
@@ -201,6 +211,8 @@ Innovation.prototype.initializeStartingCards = function() {
 // Primary game logic
 
 Innovation.prototype.firstPicks = function() {
+  this.mLog({ template: 'Choosing starting cards' })
+  this.mLogIndent()
   const requests = this
     .getPlayerAll()
     .map(p => ({
@@ -217,11 +229,12 @@ Innovation.prototype.firstPicks = function() {
     ])
     .sort((l, r) => l[1].name.localeCompare(r[1].name))
   for (const [player, card] of picks) {
-    this.mMeldCard(player, card)
+    this.mMeld(player, card)
   }
 
   this.state.currentPlayer = picks[0][0]
 
+  this.mLogOutdent()
   this.mLog({
     template: 'Round 1',
   })
@@ -239,10 +252,14 @@ Innovation.prototype.mainLoop = function() {
       }
     })
 
+    this.mLogIndent()
+
     this.artifact()
     this.action(1)
     this.action(2)
     this.endTurn()
+
+    this.mLogOutdent()
   }
 }
 
@@ -253,6 +270,7 @@ Innovation.prototype.artifact = function() {
     this.mLog({
       template: 'Free Artifact Action',
     })
+    this.mLogIndent()
 
     const action = this.requestInputSingle({
       actor: player.name,
@@ -262,16 +280,20 @@ Innovation.prototype.artifact = function() {
 
     switch (action) {
       case 'dogma':
-        return this.aDogma(player, card, { artifact: true })
+        this.aDogma(player, card, { artifact: true })
+        break
       case 'return':
-        return this.aReturn(player, card)
+        this.aReturn(player, card)
+        break
       case 'skip':
-        game.mLog({
+        this.mLog({
           template: '{player} skips the free artifact action',
           args: { player },
         })
-        return
+        break
     }
+
+    this.mLogOutdent()
   }
 }
 
@@ -283,7 +305,7 @@ Innovation.prototype.action = function(count) {
   if (this.state.turn <= numFirstPlayers) {
     if (count === 1) {
       this.mLog({
-        template: '{player} gets only 1 action on first turn',
+        template: '{player} gets only 1 action for the first round',
         args: { player }
       })
     }
@@ -293,6 +315,9 @@ Innovation.prototype.action = function(count) {
   }
 
   const countTerm = count === 1 ? 'First' : 'Second'
+  this.mLog({ template: `${countTerm} action` })
+  this.mLogIndent()
+
   const chosenAction = this.requestInputSingle({
     actor: player.name,
     title: `Choose ${countTerm} Action`,
@@ -308,6 +333,8 @@ Innovation.prototype.action = function(count) {
   else {
     throw new Error(`Unhandled action type ${name}`)
   }
+
+  this.mLogOutdent()
 }
 
 Innovation.prototype.endTurn = function() {
@@ -322,7 +349,7 @@ Innovation.prototype.endTurn = function() {
   this.state.turn += 1
   this.state.round = Math.floor((this.state.turn + players.length - 1) / players.length)
   if (this.state.round % players.length === 0) {
-    game.mLog({ template: `Round ${this.state.round}` })
+    this.mLog({ template: `Round ${this.state.round}` })
   }
 
   // Reset various turn-centric state
@@ -514,7 +541,16 @@ Innovation.prototype.getLog = function() {
 }
 
 Innovation.prototype.getLogIndent = function(msg) {
-  return 0
+  let indent = 0
+  for (const msg of this.getLog()) {
+    if (msg === '__INDENT__') {
+      indent += 1
+    }
+    else if (msg === '__OUTDENT__') {
+      indent -= 1
+    }
+  }
+  return indent
 }
 
 Innovation.prototype.getPlayerAll = function() {
@@ -561,7 +597,37 @@ Innovation.prototype.getZoneByPlayer = function(player, name) {
 ////////////////////////////////////////////////////////////////////////////////
 // Setters
 
-Innovation.prototype.mDraw = function(player, exp, age) {
+Innovation.prototype.mAdjustCardVisibility = function(card) {
+  if (!this.state.initializationComplete) {
+    return
+  }
+
+  const zone = this.getZoneByCard(card)
+
+  // Achievements are always face down.
+  if (zone.kind === 'achievements') {
+    card.visibility = []
+  }
+
+  // Forget everything about a card if it is returned.
+  else if (zone.kind === 'deck') {
+    card.visibility = []
+  }
+
+  else if (zone.kind === 'public') {
+    card.visibility = this.getPlayerAll().map(p => p.name)
+  }
+
+  else if (zone.kind === 'private') {
+    util.array.pushUnique(card.visibility, zone.owner)
+  }
+
+  else {
+    throw new Error(`Unknown zone kind ${zone.kind} for zone ${zone.id}`)
+  }
+}
+
+Innovation.prototype.mDraw = function(player, exp, age, opts={}) {
   if (age > 10) {
     throw new GameOverEvent({
       reason: 'high draw',
@@ -573,13 +639,16 @@ Innovation.prototype.mDraw = function(player, exp, age) {
   const source = this.getZoneByDeck(exp, age)
   const hand = this.getZoneByPlayer(player, 'hand')
   const card = this.mMoveTopCard(source, hand)
-  this.mLog({
-    template: '{player} draws {card}',
-    args: { player, card }
-  })
+
+  if (!opts.silent) {
+    this.mLog({
+      template: '{player} draws {card}',
+      args: { player, card }
+    })
+  }
 }
 
-Innovation.prototype.mMeldCard = function(player, card) {
+Innovation.prototype.mMeld = function(player, card) {
   const source = this.getZoneByCard(card)
   const target = this.getZoneByPlayer(player, card.color)
   const sourceIndex = source.cards.indexOf(card)
@@ -599,6 +668,7 @@ Innovation.prototype.mMoveByIndices = function(source, sourceIndex, target, targ
   sourceCards.splice(sourceIndex, 1)
   targetCards.splice(targetIndex, 0, card)
   card.zone = target.id
+  this.mAdjustCardVisibility(card)
   return card
 }
 
@@ -638,6 +708,14 @@ Innovation.prototype.mLog = function(msg) {
   this.state.log.push(msg)
 
   return msg.id
+}
+
+Innovation.prototype.mLogIndent = function() {
+  this.state.log.push('__INDENT__')
+}
+
+Innovation.prototype.mLogOutdent = function() {
+  this.state.log.push('__OUTDENT__')
 }
 
 Innovation.prototype.mResetDogmaInfo = function() {
@@ -727,9 +805,22 @@ Innovation.prototype.utilEnrichLogArgs = function(msg) {
     }
     else if (key === 'card') {
       const card = msg.args[key]
+
+      const name = card.visibility.includes(this.viewerName) ? card.name : 'hidden'
+      const classes = ['card']
+      if (card.age) {
+        classes.push(`card-age-${card.age}`)
+      }
+      if (card.expansion) {
+        classes.push(`card-exp-${card.expansion}`)
+      }
+      if (name === 'hidden') {
+        classes.push('card-hidden')
+      }
+
       msg.args[key] = {
-        value: card.name,
-        classes: [`card`],
+        value: name,
+        classes,
       }
     }
     else if (key.startsWith('zone')) {

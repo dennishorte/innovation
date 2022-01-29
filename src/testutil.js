@@ -32,7 +32,7 @@ TestUtil.fixture = function(options) {
 
   options.players = options.players.slice(0, options.numPlayers)
 
-  const game = InnovationFactory(options)
+  const game = InnovationFactory(options, 'dennis')
 
   game.testSetBreakpoint('initialization-complete', (game) => {
     // Set turn order
@@ -158,6 +158,9 @@ TestUtil.deepLog = function(obj) {
 TestUtil.dumpLog = function(game) {
   const output = []
   for (const entry of game.getLog()) {
+    if (entry === '__INDENT__' || entry === '__OUTDENT__') {
+      continue
+    }
     output.push(log.toString(entry))
   }
   console.log(output.join('\n'))
