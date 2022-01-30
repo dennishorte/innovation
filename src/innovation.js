@@ -239,6 +239,7 @@ Innovation.prototype.firstPicks = function() {
     template: 'Round 1',
   })
 
+  this.state.firstPicksComplete = true
 
   this._breakpoint('before-first-player')
 }
@@ -386,23 +387,21 @@ Innovation.prototype.aCardEffects = function(
     const effectImpl = card[`${kind}Impl`][i]
     const isDemand = effectText.startsWith('I demand')
 
-    if (isDemand && demanding.includes(player)) {
-      this.mLog({
-        template: 'Demands are made of {player}',
-        args: { player }
-      })
+    this.mLog({
+      template: `{player}, {card}: ${effectText}`,
+      args: { player, card }
+    })
+    this.mLogIndent()
+
+    const demand = isDemand && demanding.includes(player)
+    const share = !isDemand && sharing.includes(player)
+    const owner = !isDemand && player === leader
+
+    if (demand || share || owner) {
       effectImpl(this, player)
     }
-    else if (!isDemand && sharing.includes(player)) {
-      this.mLog({
-        template: 'Effect is shared with {player}',
-        args: { player }
-      })
-      effectImpl(this, player)
-    }
-    else if (player === leader) {
-      effectImpl(this, player)
-    }
+
+    this.mLogOutdent()
   }
 }
 
@@ -420,6 +419,17 @@ Innovation.prototype.aDogma = function(player, card, opts={}) {
   // Store the biscuits now because changes caused by the dogma action should
   // not affect the number of biscuits used for evaluting the effect.
   const biscuits = this.getBiscuits()
+  const primaryBiscuit = card.dogmaBiscuit
+
+  const sharing = this
+    .getPlayerAll()
+    .filter(p => p !== player)
+    .filter(p => biscuits[p.name][primaryBiscuit] >= biscuits[player.name][primaryBiscuit])
+
+  const demanding = this
+    .getPlayerAll()
+    .filter(p => p !== player)
+    .filter(p => biscuits[p.name][primaryBiscuit] < biscuits[player.name][primaryBiscuit])
 
   // Store the planned effects now, because changes caused by the dogma action
   // should not affect which effects are executed.
@@ -440,25 +450,29 @@ Innovation.prototype.aDogma = function(player, card, opts={}) {
   }
 
   for (const ecard of effectCards) {
-    this.mLog({
-      template: 'Evaluating {card}',
-      args: { card: ecard, }
-    })
-
     for (const player of this.getPlayersStartingNext()) {
-      this.aCardEffects(player, ecard, 'echo', biscuits)
+      this.aCardEffects(player, ecard, 'echo', biscuits, sharing, demanding)
 
       // Only the top card (or the artifact card for free artifact dogma actions)
       // get to do their dogma effects.
       if (ecard === card) {
-        this.aCardEffects(player, ecard, 'dogma', biscuits)
+        this.aCardEffects(player, ecard, 'dogma', biscuits, sharing, demanding)
       }
     }
   }
 
+  this.mAchievementCheck()
+
   // Share bonus
+
   if (this.state.shared) {
+    this.mLog({
+      template: '{player} draws a sharing bonus',
+      args: { player }
+    })
+    this.mLogIndent()
     this.aDraw(player, { share: true })
+    this.mLogOutdent()
   }
 
   this.mLogOutdent()
@@ -482,7 +496,11 @@ Innovation.prototype.aDraw = function(player, opts={}) {
   // Adjust age based on empty decks.
   const [ adjustedAge, adjustedExp ] = this._adjustedDrawDeck(baseAge, baseExp)
 
-  return this.mDraw(player, adjustedExp, adjustedAge)
+  const card =  this.mDraw(player, adjustedExp, adjustedAge)
+
+  this.mActed(player)
+  this.mAchievementCheck()
+  return card
 }
 
 Innovation.prototype.aDrawAndReveal = function(player, opts={}) {
@@ -513,6 +531,10 @@ Innovation.prototype.aReturn = function(player, card, opts={}) {
 
 Innovation.prototype.checkCardIsTop = function(card) {
   return this.getZoneByCard(card).cards[0] === card
+}
+
+Innovation.prototype.checkSameTeam = function(p1, p2) {
+  return p1.team === p2.team
 }
 
 Innovation.prototype.checkZoneHasVisibileDogmaOrEcho = function(zone) {
@@ -673,9 +695,22 @@ Innovation.prototype.getZoneByPlayer = function(player, name) {
 ////////////////////////////////////////////////////////////////////////////////
 // Setters
 
+Innovation.prototype.mAchievementCheck = function() {
+
+}
+
 Innovation.prototype.mActed = function(player) {
-  if (this.state.initializationComplete) {
-    this.state.dogmaInfo[player.name].acted = true
+  if (!this.state.initializationComplete) {
+    return
+  }
+
+  // There is no current player until after first picks are complete.
+  if (!this.state.firstPicksComplete) {
+    return
+  }
+
+  if (!this.checkSameTeam(player, this.getPlayerCurrent())) {
+    this.state.shared = true
   }
 }
 
@@ -807,10 +842,7 @@ Innovation.prototype.mLogOutdent = function() {
 }
 
 Innovation.prototype.mResetDogmaInfo = function() {
-  const emptyInfo = this
-    .getPlayerAll()
-    .map(p => [p.name, { acted: false }])
-  this.state.dogmaInfo = util.array.toDict(emptyInfo)
+  this.state.dogmaInfo = {}
 }
 
 Innovation.prototype.mResetMonumentCounts = function() {
@@ -898,7 +930,8 @@ Innovation.prototype.utilEnrichLogArgs = function(msg) {
     else if (key === 'card') {
       const card = msg.args[key]
 
-      const name = card.visibility.includes(this.viewerName) ? card.name : 'hidden'
+      const hiddenName = `*${card.expansion}${card.age}*`
+      const name = card.visibility.includes(this.viewerName) ? card.name : hiddenName
       const classes = ['card']
       if (card.age) {
         classes.push(`card-age-${card.age}`)

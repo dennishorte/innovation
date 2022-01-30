@@ -146,6 +146,42 @@ describe('Innovation', () => {
       })
     })
 
+    describe('dogma action', () => {
+      test('share', () => {
+        const game = t.fixtureTopCard('Writing')
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.setColor(game, 'dennis', 'red', [])
+          t.setColor(game, 'micah', 'blue', ['Tools'])
+        })
+        const request = game.run()
+        t.choose(game, request, 'Dogma.Writing')
+
+        const dennis = game.getPlayerByName('dennis')
+        const dennisHandAges = game.getZoneByPlayer(dennis, 'hand').cards.map(c => c.age).sort()
+        expect(dennisHandAges).toStrictEqual([1, 1, 2])
+
+        const micah = game.getPlayerByName('micah')
+        const micahHandAges = game.getZoneByPlayer(micah, 'hand').cards.map(c => c.age).sort()
+        expect(micahHandAges).toStrictEqual([1, 2])
+      })
+
+      test.skip('demand', () => {
+
+      })
+
+      test.skip('compel', () => {
+
+      })
+
+      test.skip('biscuits change during dogma', () => {
+
+      })
+
+      test.skip('achievement check', () => {
+
+      })
+    })
+
     describe('draw action', () => {
       test('player draws a card based on top card age (test 1)', () => {
         const game = t.fixtureFirstPlayer()
