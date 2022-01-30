@@ -176,10 +176,6 @@ describe('Innovation', () => {
       test.skip('biscuits change during dogma', () => {
 
       })
-
-      test.skip('achievement check', () => {
-
-      })
     })
 
     describe('draw action', () => {

@@ -461,10 +461,7 @@ Innovation.prototype.aDogma = function(player, card, opts={}) {
     }
   }
 
-  this.mAchievementCheck()
-
   // Share bonus
-
   if (this.state.shared) {
     this.mLog({
       template: '{player} draws a sharing bonus',
@@ -499,7 +496,6 @@ Innovation.prototype.aDraw = function(player, opts={}) {
   const card =  this.mDraw(player, adjustedExp, adjustedAge)
 
   this.mActed(player)
-  this.mAchievementCheck()
   return card
 }
 
@@ -699,16 +695,21 @@ Innovation.prototype.mAchievementCheck = function() {
 
 }
 
+Innovation.prototype.mAchieve = function(player, card) {
+  const target = this.getZoneByPlayer(player, 'achievements')
+  this.mMoveCard(card, target)
+  this.mActed(player)
+  return card
+}
+
 Innovation.prototype.mActed = function(player) {
-  if (!this.state.initializationComplete) {
+  // Any time someone acts, there is the possibility that they should claim
+  // a special achievement.
+  this.mAchievementCheck()
+
+  if (!this.state.initializationComplete || !this.state.firstPicksComplete) {
     return
   }
-
-  // There is no current player until after first picks are complete.
-  if (!this.state.firstPicksComplete) {
-    return
-  }
-
   if (!this.checkSameTeam(player, this.getPlayerCurrent())) {
     this.state.shared = true
   }
@@ -765,7 +766,13 @@ Innovation.prototype.mDraw = function(player, exp, age, opts={}) {
   }
 
   this.mActed(player)
+  return card
+}
 
+Innovation.prototype.mForeshadow = function(player, card) {
+  const target = this.getZoneByPlayer(player, 'forecast')
+  this.mMoveCardTo(card, target)
+  this.mActed(player)
   return card
 }
 
@@ -781,6 +788,7 @@ Innovation.prototype.mMeld = function(player, card) {
   })
 
   this.mActed(player)
+  return card
 }
 
 Innovation.prototype.mMoveByIndices = function(source, sourceIndex, target, targetIndex) {
@@ -871,7 +879,6 @@ Innovation.prototype.mReturn = function(player, card, opts) {
   }
 
   this.mActed(player)
-
   return card
 }
 
@@ -882,6 +889,30 @@ Innovation.prototype.mReveal = function(player, card) {
     args: { player, card }
   })
   this.mActed(player)
+  return card
+}
+
+Innovation.prototype.mSplay = function(player, color, direction) {
+  const target = this.getZoneByPlayer(player, color)
+  if (target.splay !== direction) {
+    target.splay = direction
+    this.mLog({
+      template: '{player} splays {color} {direction}',
+      args: { player, color, direction }
+    })
+    this.mActed(player)
+  }
+}
+
+Innovation.prototype.mTuck = function(player, card) {
+  const target = this.getZoneByPlayer(player, card.color)
+  this.mMoveCardTo(card, target)
+  this.mLog({
+    template: '{player} tucks {card}',
+    args: { player, card }
+  })
+  this.mActed(player)
+  return card
 }
 
 
