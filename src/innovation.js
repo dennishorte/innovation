@@ -535,6 +535,15 @@ Innovation.prototype.aKarma = function(player, kind, opts={}) {
 
 }
 
+Innovation.prototype.aMeld = function(player, card, opts={}) {
+  const karmaKind = this.aKarma(player, 'meld', { ...opts, card })
+  if (karmaKind === 'would-instead') {
+    return
+  }
+
+  return this.mMeld(player, card, opts)
+}
+
 Innovation.prototype.aReturn = function(player, card, opts={}) {
   const karmaKind = this.aKarma(player, 'return', { ...opts, card })
   if (karmaKind === 'would-instead') {

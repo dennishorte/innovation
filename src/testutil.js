@@ -126,6 +126,17 @@ TestUtil.choose = function(game, request, ...selections) {
   })
 }
 
+TestUtil.clearBoard = function(game, playerName) {
+  const player = game.getPlayerByName(playerName)
+  for (const color of game.utilColors()) {
+    const zone = game.getZoneByPlayer(player, color)
+    const cards = [...zone.cards]
+    for (const card of cards) {
+      game.mReturn(player, card, { silent: true })
+    }
+  }
+}
+
 TestUtil.clearHand = function(game, playerName) {
   const player = game.getPlayerByName(playerName)
   const cards = [...game.getZoneByPlayer(player, 'hand').cards]

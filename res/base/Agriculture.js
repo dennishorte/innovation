@@ -24,8 +24,7 @@ function Card() {
         choices: cardsInHand,
         min: 0,
         max: 1,
-      })[0].selection
-
+      })
 
       if (returned.length > 0) {
         const card = game.getCardByName(returned[0])
