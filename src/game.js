@@ -78,6 +78,21 @@ function DuplicateResponseError(msg) {
 ////////////////////////////////////////////////////////////////////////////////
 // Input Requests / Responses
 
+Game.prototype._validateResponse = function(requests, response) {
+  const request = requests.find(r => r.actor === response.actor)
+  util.assert(request !== undefined, "No request matches the response actor")
+
+  const result = selector.validate(request, response)
+  if (!result.valid) {
+    console.log(JSON.stringify({
+      request,
+      response,
+      result,
+    }, null, 2))
+    throw new Error('Invalid response')
+  }
+}
+
 Game.prototype.requestInputMany = function(array) {
   if (!Array.isArray(array)) {
     array = [array]
@@ -90,12 +105,14 @@ Game.prototype.requestInputMany = function(array) {
       throw new DuplicateResponseError(`Duplicate response from ${resp.actor}`)
     }
     else if (resp) {
+      this._validateResponse(array, resp)
       responses.push(resp)
     }
     else {
       const unanswered = array.filter(request => !responses.find(r => r.actor === request.actor))
       const answer = this._tryToAutomaticallyRespond(unanswered)
       if (answer) {
+        this._validateResponse(array, answer)
         responses.push(answer)
       }
       else {
@@ -113,6 +130,8 @@ Game.prototype.requestInputSingle = function(selector) {
 }
 
 Game.prototype.respondToInputRequest = function(response) {
+  const t = require('./testutil.js')
+
   util.assert(response.key === this.key, "Invalid response. State has updated.")
   this.responses.push(response)
 
@@ -225,11 +244,12 @@ Game.prototype._tryToAutomaticallyRespond = function(selectors) {
   for (const sel of selectors) {
     const { min, max } = selector.minMax(sel)
     if (min >= sel.choices.length) {
-      return {
+      const response = {
         actor: sel.actor,
         title: sel.title,
         selection: sel.choices,
       }
+      return response
     }
   }
 

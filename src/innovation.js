@@ -405,6 +405,27 @@ Innovation.prototype.aCardEffects = function(
   }
 }
 
+Innovation.prototype.aClaimAchievement = function(player, opts={}) {
+  let card
+  if (opts.name) {
+    card = this.getCardByName(opts.name)
+  }
+  else if (opts.age) {
+    card = this.getZoneById('achievements').cards.find(c => c.age === opts.age)
+  }
+
+  if (!card) {
+    throw new Error(`Unable to find achievement given opts: ${JSON.stringify(opts)}`)
+  }
+
+  const karmaKind = this.aKarma(player, 'achieve', opts)
+  if (karmaKind === 'would-instead') {
+    return
+  }
+
+  return this.mAchieve(player, card)
+}
+
 Innovation.prototype.aDogma = function(player, card, opts={}) {
   this.mLog({
     template: '{player} activates the dogma effects of {card}',
@@ -493,20 +514,20 @@ Innovation.prototype.aDraw = function(player, opts={}) {
   // Adjust age based on empty decks.
   const [ adjustedAge, adjustedExp ] = this._adjustedDrawDeck(baseAge, baseExp)
 
-  return this.mDraw(player, adjustedExp, adjustedAge)
+  return this.mDraw(player, adjustedExp, adjustedAge, opts)
 }
 
 Innovation.prototype.aDrawAndReveal = function(player, opts={}) {
   const card = this.aDraw(player, opts)
   if (card) {
-    return this.mReveal(card)
+    return this.mReveal(card, opts)
   }
 }
 
 Innovation.prototype.aDrawAndScore = function(player, opts={}) {
   const card = this.aDraw(player, opts)
   if (card) {
-    return this.aScore(player, card)
+    return this.aScore(player, card, opts)
   }
 }
 
@@ -520,7 +541,7 @@ Innovation.prototype.aReturn = function(player, card, opts={}) {
     return
   }
 
-  return this.mReturn(player, card)
+  return this.mReturn(player, card, opts)
 }
 
 Innovation.prototype.aScore = function(player, card, opts={}) {
@@ -529,12 +550,25 @@ Innovation.prototype.aScore = function(player, card, opts={}) {
     return
   }
 
-  return this.mScore(player, card)
+  return this.mScore(player, card, opts)
+}
+
+Innovation.prototype.aTransfer = function(player, card, target, opts={}) {
+  const karmaKind = this.aKarma(player, 'transfer', { ...opts, card, target })
+  if (karmaKind === 'would-instead') {
+    return
+  }
+
+  return this.mTransfer(player, card, target, opts)
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // Checkers
+
+Innovation.prototype.checkAchievementAvailable = function(name) {
+  return !!this.getZoneById('achievements').cards.find(ach => ach.name === name)
+}
 
 Innovation.prototype.checkCardIsTop = function(card) {
   return this.getZoneByCard(card).cards[0] === card
@@ -762,7 +796,11 @@ Innovation.prototype.mAchievementCheck = function() {
 
 Innovation.prototype.mAchieve = function(player, card) {
   const target = this.getZoneByPlayer(player, 'achievements')
-  this.mMoveCard(card, target)
+  this.mLog({
+    template: '{player} achieves {card}',
+    args: { player, card }
+  })
+  this.mMoveCardTo(card, target)
   this.mActed(player)
   return card
 }
@@ -978,6 +1016,16 @@ Innovation.prototype.mSplay = function(player, color, direction) {
     })
     this.mActed(player)
   }
+}
+
+Innovation.prototype.mTransfer = function(player, card, target) {
+  this.mMoveCardTo(card, target)
+  this.mLog({
+    template: '{player} transfer {card} to {zone}',
+    args: { player, card, zone: target }
+  })
+  this.mActed(player)
+  return card
 }
 
 Innovation.prototype.mTuck = function(player, card) {

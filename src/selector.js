@@ -158,5 +158,7 @@ function minMax(selector) {
   }
   util.assert(min <= max, `min (${min}) must be <= max (${max})`)
 
+  min = Math.min(min, selector.choices.length)
+
   return { min, max }
 }

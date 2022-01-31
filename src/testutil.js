@@ -108,11 +108,9 @@ TestUtil.choose = function(game, request, ...selections) {
       return tokens[0]
     }
     else if (tokens.length === 2) {
-      const selection = tokens[1] === '*' ? [] : [tokens[1]]
-
       return {
         name: tokens[0],
-        selection
+        selection: tokens[1] === '*' ? [] : [tokens[1]]
       }
     }
     else {
@@ -128,12 +126,17 @@ TestUtil.choose = function(game, request, ...selections) {
   })
 }
 
+TestUtil.clearHand = function(game, playerName) {
+  const player = game.getPlayerByName(playerName)
+  const cards = [...game.getZoneByPlayer(player, 'hand').cards]
+  for (const card of cards) {
+    game.mMoveCardTo(card, game.getZoneById(card.home))
+  }
+}
+
 TestUtil.clearHands = function(game) {
   for (const player of game.getPlayerAll()) {
-    const cards = [...game.getZoneByPlayer(player, 'hand').cards]
-    for (const card of cards) {
-      game.mMoveCardTo(card, game.getZoneById(card.home))
-    }
+    TestUtil.clearHand(game, player.name)
   }
 }
 
@@ -150,6 +153,7 @@ TestUtil.setColor = function(game, playerName, colorName, cardNames) {
 }
 
 TestUtil.setHand = function(game, playerName, cardNames) {
+  TestUtil.clearHand(game, playerName)
   const player = game.getPlayerByName(playerName)
   const hand = game.getZoneByPlayer(player, 'hand')
   for (const name of cardNames) {
