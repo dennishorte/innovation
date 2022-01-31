@@ -1,4 +1,5 @@
 const seedrandom = require('seedrandom')
+const selector = require('./selector.js')
 const util = require('./util.js')
 
 module.exports = {
@@ -68,10 +69,10 @@ Game.prototype.serialize = function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Custom Errors
 
+util.inherit(Error, DuplicateResponseError)
 function DuplicateResponseError(msg) {
   Error.call(this, msg)
 }
-util.inherit(Error, DuplicateResponseError)
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -93,7 +94,13 @@ Game.prototype.requestInputMany = function(array) {
     }
     else {
       const unanswered = array.filter(request => !responses.find(r => r.actor === request.actor))
-      throw new InputRequestEvent(unanswered)
+      const answer = this._tryToAutomaticallyRespond(unanswered)
+      if (answer) {
+        responses.push(answer)
+      }
+      else {
+	throw new InputRequestEvent(unanswered)
+      }
     }
   }
   return responses
@@ -212,6 +219,21 @@ Game.prototype._reset = function() {
 Game.prototype._setInputRequestKey = function() {
   this.key = this.random.int32()
   return this.key
+}
+
+Game.prototype._tryToAutomaticallyRespond = function(selectors) {
+  for (const sel of selectors) {
+    const { min, max } = selector.minMax(sel)
+    if (min >= sel.choices.length) {
+      return {
+        actor: sel.actor,
+        title: sel.title,
+        selection: sel.choices,
+      }
+    }
+  }
+
+  return undefined
 }
 
 
