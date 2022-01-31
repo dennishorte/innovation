@@ -387,21 +387,23 @@ Innovation.prototype.aCardEffects = function(
     const effectImpl = card[`${kind}Impl`][i]
     const isDemand = effectText.startsWith('I demand')
 
-    this.mLog({
-      template: `{player}, {card}: ${effectText}`,
-      args: { player, card }
-    })
-    this.mLogIndent()
 
     const demand = isDemand && demanding.includes(player)
     const share = !isDemand && sharing.includes(player)
     const owner = !isDemand && player === leader
 
     if (demand || share || owner) {
+      this.mLog({
+        template: `{player}, {card}: ${effectText}`,
+        args: { player, card }
+      })
+      this.mLogIndent()
+
       effectImpl(this, player)
+
+      this.mLogOutdent()
     }
 
-    this.mLogOutdent()
   }
 }
 
