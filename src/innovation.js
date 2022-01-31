@@ -493,16 +493,20 @@ Innovation.prototype.aDraw = function(player, opts={}) {
   // Adjust age based on empty decks.
   const [ adjustedAge, adjustedExp ] = this._adjustedDrawDeck(baseAge, baseExp)
 
-  const card =  this.mDraw(player, adjustedExp, adjustedAge)
-
-  this.mActed(player)
-  return card
+  return this.mDraw(player, adjustedExp, adjustedAge)
 }
 
 Innovation.prototype.aDrawAndReveal = function(player, opts={}) {
   const card = this.aDraw(player, opts)
   if (card) {
     return this.mReveal(card)
+  }
+}
+
+Innovation.prototype.aDrawAndScore = function(player, opts={}) {
+  const card = this.aDraw(player, opts)
+  if (card) {
+    return this.aScore(player, card)
   }
 }
 
@@ -516,9 +520,16 @@ Innovation.prototype.aReturn = function(player, card, opts={}) {
     return
   }
 
-  this.mReturn(player, card)
-  this.aAchievementCheck()
-  return card
+  return this.mReturn(player, card)
+}
+
+Innovation.prototype.aScore = function(player, card, opts={}) {
+  const karmaKind = this.aKarma(player, 'score', { ...opts, card })
+  if (karmaKind === 'would-instead') {
+    return
+  }
+
+  return this.mScore(player, card)
 }
 
 
@@ -587,6 +598,26 @@ Innovation.prototype.getBiscuitsRaw = function(card, splay) {
        : card.getBiscuits(splay)
 }
 
+Innovation.prototype.getBonuses = function(player) {
+  const rx = /([ab1-9])/g
+  const bonuses = this
+    .utilColors()
+    .map(color => this.getZoneByPlayer(player, color))
+    .flatMap(zone => zone.cards.map(card => this.getBiscuitsRaw(card, zone.splay)))
+    .flatMap(biscuits => biscuits.match(rx))
+    .filter(bonus => bonus !== null)
+    .map(bonus => {
+      switch (bonus) {
+        case 'a': return 10;
+        case 'b': return 11;
+        default: return parseInt(bonus)
+      }
+    })
+
+  bonuses.sort((l, r) => r - l)
+  return bonuses
+}
+
 Innovation.prototype.getCardByName = function(name) {
   util.assert(res.all.byName.hasOwnProperty(name), `Unknown card: ${name}`)
   return res.all.byName[name]
@@ -643,6 +674,15 @@ Innovation.prototype.getPlayerByName = function(name) {
   return player
 }
 
+// Return an array of all players, starting with the current player.
+Innovation.prototype.getPlayersStartingCurrent = function() {
+  const players = [...this.getPlayerAll()]
+  while (players[0] !== this.getPlayerCurrent()) {
+    players.push(players.shift())
+  }
+  return players
+}
+
 // Return an array of all players, starting with the player who will follow the current player.
 // Commonly used when evaluating effects
 Innovation.prototype.getPlayersStartingNext = function() {
@@ -651,6 +691,24 @@ Innovation.prototype.getPlayersStartingNext = function() {
     players.push(players.shift())
   }
   return players
+}
+
+Innovation.prototype.getScore = function(player) {
+  const inScore = this
+    .getZoneByPlayer(player, 'score')
+    .cards
+    .reduce((l, r) => l + r.age, 0)
+
+  // Bonuses
+  const bonuses = this.getBonuses(player)
+  const bonusPoints = (bonuses[0] || 1) + (bonuses.length - 1)
+
+  const karma = this
+    .getCardsByKarmaTrigger(player, 'calculate-score')
+    .map(card => this.utilApplyKarma(card, 'calculate-score', this, player))
+    .reduce((l, r) => l + r, 0)
+
+  return inScore + bonusPoints + karma
 }
 
 Innovation.prototype.getTopCards = function(player) {
@@ -692,7 +750,14 @@ Innovation.prototype.getZoneByPlayer = function(player, name) {
 // Setters
 
 Innovation.prototype.mAchievementCheck = function() {
-
+  /* const available = this.getZoneById('achievements').cards
+   * for (const player of this.getPlayersStartingCurrent()) {
+   *   for (const card of available) {
+   *     if (card.checkPlayerIsEligible && card.checkPlayerIsEligible(player)) {
+   *       this.aClaimAchievement(player, card)
+   *     }
+   *   }
+   * } */
 }
 
 Innovation.prototype.mAchieve = function(player, card) {
@@ -703,16 +768,17 @@ Innovation.prototype.mAchieve = function(player, card) {
 }
 
 Innovation.prototype.mActed = function(player) {
-  // Any time someone acts, there is the possibility that they should claim
-  // a special achievement.
-  this.mAchievementCheck()
-
   if (!this.state.initializationComplete || !this.state.firstPicksComplete) {
     return
   }
+
   if (!this.checkSameTeam(player, this.getPlayerCurrent())) {
     this.state.shared = true
   }
+
+  // Any time someone acts, there is the possibility that they should claim
+  // a special achievement.
+  this.mAchievementCheck()
 }
 
 Innovation.prototype.mAdjustCardVisibility = function(card) {
@@ -889,6 +955,16 @@ Innovation.prototype.mReveal = function(player, card) {
     args: { player, card }
   })
   this.mActed(player)
+  return card
+}
+
+Innovation.prototype.mScore = function(player, card) {
+  const target = this.getZoneByPlayer(player, 'score')
+  this.mMoveCardTo(card, target)
+  this.mLog({
+    template: '{player} scores {card}',
+    args: { player, card }
+  })
   return card
 }
 

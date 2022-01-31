@@ -108,9 +108,11 @@ TestUtil.choose = function(game, request, ...selections) {
       return tokens[0]
     }
     else if (tokens.length === 2) {
+      const selection = tokens[1] === '*' ? [] : [tokens[1]]
+
       return {
         name: tokens[0],
-        selection: [tokens[1]]
+        selection
       }
     }
     else {
