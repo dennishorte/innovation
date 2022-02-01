@@ -408,10 +408,41 @@ Innovation.prototype.aCardEffects = function(
   }
 }
 
-Innovation.prototype.aChooseAndSplay = function(player, opts) {
+Innovation.prototype.aChooseAndScore = function(opts) {
+  const player = this.getPlayerByName(opts.actor)
+  const cards = this.requestInputSingle(opts)
+  if (cards.length === 0) {
+    this.mLog({
+      template: '{player} does nothing',
+      args: { player }
+    })
+  }
+  else {
+    const card = this.getCardByName(cards[0])
+    this.aScore(player, card)
+  }
+}
+
+Innovation.prototype.aChooseAndSplay = function(opts) {
+  const player = this.getPlayerByName(opts.actor)
+
+  if (!opts.choices) {
+    const choices = this
+      .utilColors()
+      .filter(color => this.getZoneByPlayer(player, color).splay !== 'left')
+      .filter(color => this.getZoneByPlayer(player, color).cards.length > 1)
+
+    if (choices.length === 0) {
+      this.mLog({ template: 'no effect' })
+      return
+    }
+
+    opts.choices = choices
+  }
+
   const colors = this.requestInputSingle(opts)
   if (colors.length === 0) {
-    game.mLog({
+    this.mLog({
       template: '{player} does nothing',
       args: { player }
     })

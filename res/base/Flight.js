@@ -26,7 +26,7 @@ function Card() {
           .filter(zone => zone.splay !== 'up')
           .map(zone => zone.color)
 
-        game.aChooseAndSplay(player, {
+        game.aChooseAndSplay({
           actor: player.name,
           title: 'Choose a Color',
           choices: otherColors,
@@ -45,7 +45,7 @@ function Card() {
         game.mLog({ template: 'no effect' })
       }
       else {
-        game.aChooseAndSplay(player, {
+        game.aChooseAndSplay({
           actor: player.name,
           title: 'Choose a Color',
           choices: ['red'],
