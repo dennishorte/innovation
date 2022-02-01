@@ -406,14 +406,27 @@ Innovation.prototype.aCardEffects = function(
   }
 }
 
+Innovation.prototype.aChooseCard = function(opts) {
+  if (opts.choices.length === 0) {
+    this.mLogNoEffect()
+    return undefined
+  }
+
+  const player = this.getPlayerByName(opts.actor)
+  const cardNames = this.requestInputSingle(opts)
+  if (cardNames.length === 0) {
+    this.mLogDoNothing(player)
+  }
+  else {
+    return this.getCardByName(cardNames[0])
+  }
+}
+
 Innovation.prototype.aChooseAndScore = function(opts) {
   const player = this.getPlayerByName(opts.actor)
   const cardNames = this.requestInputSingle(opts)
   if (cardNames.length === 0) {
-    this.mLog({
-      template: '{player} does nothing',
-      args: { player }
-    })
+    this.mLogDoNothing(player)
   }
   else {
     cardNames
@@ -435,16 +448,13 @@ Innovation.prototype.aChooseAndSplay = function(opts) {
     .filter(color => this.getZoneByPlayer(player, color).cards.length > 1)
 
   if (opts.choices.length === 0) {
-    this.mLog({ template: 'no effect' })
+    this.mLogNoEffect()
     return
   }
 
   const colors = this.requestInputSingle(opts)
   if (colors.length === 0) {
-    this.mLog({
-      template: '{player} does nothing',
-      args: { player }
-    })
+    this.mLogDoNothing(player)
   }
   else {
     this.aSplay(player, colors[0], opts.direction)
@@ -656,6 +666,12 @@ Innovation.prototype.aTransfer = function(player, card, target, opts={}) {
   return this.mTransfer(player, card, target, opts)
 }
 
+Innovation.prototype.aTransferMany = function(player, cards, target, opts={}) {
+  for (const card of cards) {
+    this.aTransfer(player, card, target, opts)
+  }
+}
+
 Innovation.prototype.aTuck = function(player, card, opts={}) {
   const karmaKind = this.aKarma(player, 'tuck', { ...opts, card })
   if (karmaKind === 'would-instead') {
@@ -821,6 +837,12 @@ Innovation.prototype.getPlayerByName = function(name) {
   return player
 }
 
+Innovation.prototype.getPlayerOpponents = function(player) {
+  return this
+    .getPlayerAll()
+    .filter(p => !this.checkSameTeam(p, player))
+}
+
 // Return an array of all players, starting with the current player.
 Innovation.prototype.getPlayersStartingCurrent = function() {
   const players = [...this.getPlayerAll()]
@@ -856,6 +878,12 @@ Innovation.prototype.getScore = function(player) {
     .reduce((l, r) => l + r, 0)
 
   return inScore + bonusPoints + karma
+}
+
+Innovation.prototype.getTopCard = function(player, color) {
+  return this
+    .getZoneByPlayer(player, color)
+    .cards[0]
 }
 
 Innovation.prototype.getTopCards = function(player) {
@@ -1151,7 +1179,7 @@ Innovation.prototype.mSplay = function(player, color, direction) {
 Innovation.prototype.mTransfer = function(player, card, target) {
   this.mMoveCardTo(card, target)
   this.mLog({
-    template: '{player} transfer {card} to {zone}',
+    template: '{player} transfers {card} to {zone}',
     args: { player, card, zone: target }
   })
   this.mActed(player)

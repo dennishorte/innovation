@@ -46,7 +46,7 @@ TestUtil.fixture = function(options) {
     TestUtil.setHand(game, 'dennis', ['Archery', 'Domestication'])
     TestUtil.setHand(game, 'micah', ['Mysticism', 'Code of Laws'])
     if (options.numPlayers >= 3) {
-      TestUtil.sethand(game, 'scott', ['Sailing', 'The Wheel'])
+      TestUtil.setHand(game, 'scott', ['Sailing', 'The Wheel'])
     }
     if (options.numPlayers >= 4) {
       TestUtil.setHand(game, 'eliya', ['Oars', 'Writing'])
