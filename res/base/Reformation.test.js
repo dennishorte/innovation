@@ -28,7 +28,7 @@ describe('Reformation', () => {
       const request3 = t.choose(game, request2, 'yes')
       const request4 = t.choose(game, request3, 'Mapmaking', 'Currency')
 
-      expect(t.cards(game, 'green')).toStrictEqual(['Clothing', 'Currency', 'Mapmaking'])
+      expect(t.cards(game, 'green')).toStrictEqual(['Clothing', 'Mapmaking', 'Currency'])
     })
   })
 

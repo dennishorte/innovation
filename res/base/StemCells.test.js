@@ -22,7 +22,7 @@ describe('Stem Cells', () => {
     const request2 = t.choose(game, request1, 'Dogma.Stem Cells')
     t.choose(game, request2, 'yes')
 
-    expect(t.cards(game, 'score')).toStrictEqual(['Experimentation', 'Reformation'])
+    expect(t.cards(game, 'score').sort()).toStrictEqual(['Experimentation', 'Reformation'])
   })
 
   test('cards in hand, no', () => {

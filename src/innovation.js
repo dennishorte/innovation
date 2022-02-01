@@ -416,6 +416,7 @@ Innovation.prototype.aChooseCard = function(opts) {
   const cardNames = this.requestInputSingle(opts)
   if (cardNames.length === 0) {
     this.mLogDoNothing(player)
+    return undefined
   }
   else {
     return this.getCardByName(cardNames[0])
@@ -591,6 +592,13 @@ Innovation.prototype.aDraw = function(player, opts={}) {
   const [ adjustedAge, adjustedExp ] = this._adjustedDrawDeck(baseAge, baseExp)
 
   return this.mDraw(player, adjustedExp, adjustedAge, opts)
+}
+
+Innovation.prototype.aDrawAndForeshadow = function(player, age, opts={}) {
+  const card = this.aDraw(player, {...opts, age })
+  if (card) {
+    return this.mForeshadow(player, card, opts)
+  }
 }
 
 Innovation.prototype.aDrawAndMeld = function(player, age, opts={}) {
@@ -1358,7 +1366,7 @@ Innovation.prototype._adjustedDrawDeck = function(age, exp) {
 Innovation.prototype._determineBaseDrawExpansion = function(player, share) {
   if (this.getExpansionList().includes('echo')) {
     const hand = this.getZoneByPlayer(player, 'hand')
-    const echoesCards = hand.filter(c => c.expansion === 'echo')
+    const echoesCards = hand.cards.filter(c => c.expansion === 'echo')
     if (hand.length > 0 && echoesCards.length === 0) {
       return 'echo'
     }

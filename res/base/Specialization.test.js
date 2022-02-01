@@ -15,7 +15,7 @@ describe('Specialization', () => {
       const request1 = game.run()
       const request2 = t.choose(game, request1, 'Dogma.Specialization')
 
-      expect(t.cards(game, 'hand')).toStrictEqual([
+      expect(t.cards(game, 'hand').sort()).toStrictEqual([
         'Archery',
         'Metalworking',
         'Oars',

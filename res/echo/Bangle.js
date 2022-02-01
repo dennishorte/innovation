@@ -9,14 +9,36 @@ function Card() {
   this.biscuits = `hk&1`
   this.dogmaBiscuit = `k`
   this.inspire = ``
-  this.echo = `Tuck a red card from your hand.`
+  this.echo = [`Tuck a red card from your hand.`]
   this.karma = []
   this.dogma = [
     `Draw and foreshadow a {2}.`
   ]
 
-  this.dogmaImpl = []
-  this.echoImpl = []
+  this.dogmaImpl = [
+    (game, player) => {
+      game.aDrawAndForeshadow(player, 2)
+    }
+  ]
+  this.echoImpl = [
+    (game, player) => {
+      const redCards = game
+        .getZoneByPlayer(player, 'hand')
+        .cards
+        .filter(card => card.color === 'red')
+        .map(c => c.id)
+
+      const card = game.aChooseCard({
+        actor: player.name,
+        title: 'Choose a Red Card',
+        choices: redCards,
+      })
+
+      if (card) {
+        game.aTuck(player, card)
+      }
+    }
+  ]
   this.inspireImpl = []
   this.karmaImpl = []
 }

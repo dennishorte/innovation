@@ -113,7 +113,7 @@ TestUtil.dennis = function(game) {
 }
 
 TestUtil.cards = function(game, zoneName) {
-  return TestUtil.zone(game, zoneName).cards.map(c => c.name).sort()
+  return TestUtil.zone(game, zoneName).cards.map(c => c.name)
 }
 
 TestUtil.zone = function(game, zoneName) {

@@ -147,6 +147,20 @@ describe('Innovation', () => {
     })
 
     describe('dogma action', () => {
+      test('echo', () => {
+        const game = t.fixtureFirstPlayer({ expansions: ['base', 'echo'] })
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.setColor(game, 'dennis', 'red', ['Metalworking', 'Bangle'])
+          t.setSplay(game, 'dennis', 'red', 'up')
+          t.setHand(game, 'dennis', ['Archery'])
+          t.setDeckTop(game, 'echo', 1, ['Ruler'])
+        })
+        const request1 = game.run()
+        const request2 = t.choose(game, request1, 'Dogma.Metalworking')
+
+        expect(t.cards(game, 'red')).toStrictEqual(['Metalworking', 'Bangle', 'Archery'])
+      })
+
       test('share', () => {
         const game = t.fixtureTopCard('Writing')
         game.testSetBreakpoint('before-first-player', (game) => {
