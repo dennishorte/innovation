@@ -1030,6 +1030,10 @@ Innovation.prototype.mDraw = function(player, exp, age, opts={}) {
 Innovation.prototype.mForeshadow = function(player, card) {
   const target = this.getZoneByPlayer(player, 'forecast')
   this.mMoveCardTo(card, target)
+  this.mLog({
+    template: '{player} foreshadows {card}',
+    args: { player, card }
+  })
   this.mActed(player)
   return card
 }
@@ -1367,7 +1371,7 @@ Innovation.prototype._determineBaseDrawExpansion = function(player, share) {
   if (this.getExpansionList().includes('echo')) {
     const hand = this.getZoneByPlayer(player, 'hand')
     const echoesCards = hand.cards.filter(c => c.expansion === 'echo')
-    if (hand.length > 0 && echoesCards.length === 0) {
+    if (hand.cards.length > 0 && echoesCards.length === 0) {
       return 'echo'
     }
   }
