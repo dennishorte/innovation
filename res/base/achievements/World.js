@@ -4,6 +4,7 @@ module.exports = function() {
   this.exp = 'base'
   this.text = 'Have twelve {i} on your board.'
   this.alt = 'Translation'
+  this.isSpecialAchievement = true
   this.checkPlayerIsEligible = function(game, player) {
     return game.getBiscuitsByPlayer(player).i >= 12
   }

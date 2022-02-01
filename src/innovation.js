@@ -1166,6 +1166,8 @@ Innovation.prototype.mScore = function(player, card) {
     template: '{player} scores {card}',
     args: { player, card }
   })
+  this.state.monument[player.name].score += 1
+  this.mActed(player)
   return card
 }
 
@@ -1198,6 +1200,7 @@ Innovation.prototype.mTuck = function(player, card) {
     template: '{player} tucks {card}',
     args: { player, card }
   })
+  this.state.monument[player.name].tuck += 1
   this.mActed(player)
   return card
 }
@@ -1248,8 +1251,15 @@ Innovation.prototype.utilEnrichLogArgs = function(msg) {
     else if (key === 'card') {
       const card = msg.args[key]
 
-      const hiddenName = `*${card.expansion}${card.age}*`
-      const name = card.visibility.includes(this.viewerName) ? card.name : hiddenName
+      let name
+      if (card.isSpecialAchievement) {
+        name = card.name
+      }
+      else {
+        const hiddenName = `*${card.expansion}${card.age}*`
+        name = card.visibility.includes(this.viewerName) ? card.name : hiddenName
+      }
+
       const classes = ['card']
       if (card.age) {
         classes.push(`card-age-${card.age}`)

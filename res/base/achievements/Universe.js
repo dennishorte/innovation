@@ -4,6 +4,7 @@ module.exports = function() {
   this.exp = 'base'
   this.text = 'Have five top cards of value 8+.'
   this.alt = 'Astronmy'
+  this.isSpecialAchievement = true
   this.checkPlayerIsEligible = function(game, player) {
     return game
       .utilColors()

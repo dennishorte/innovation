@@ -4,6 +4,7 @@ module.exports = function() {
   this.exp = 'base'
   this.text = 'Have five colors splayed either up or right.'
   this.alt = 'Invention'
+  this.isSpecialAchievement = true
   this.checkPlayerIsEligible = function(game, player) {
     return game
       .utilColors()
