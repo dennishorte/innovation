@@ -5,8 +5,7 @@ module.exports = function() {
   this.text = 'Have three biscuits of each of the six biscuit types.'
   this.alt = 'Construction'
   this.checkPlayerIsEligible = function(game, player) {
-    player = game._adjustPlayerParam(player)
-    const biscuits = game.getBiscuits(player)
-    return Object.values(biscuits.final).every(count => count >= 3)
+    const biscuits = game.getBiscuitsByPlayer(player)
+    return Object.values(biscuits).every(count => count >= 3)
   }
 }

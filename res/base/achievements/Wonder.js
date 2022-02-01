@@ -7,7 +7,7 @@ module.exports = function() {
   this.checkPlayerIsEligible = function(game, player) {
     return game
       .utilColors()
-      .map(c => game.getZoneColorByPlayer(player, c).splay)
+      .map(c => game.getZoneByPlayer(player, c).splay)
       .every(splay => splay === 'right' || splay === 'up')
   }
 }

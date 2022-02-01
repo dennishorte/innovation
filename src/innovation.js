@@ -479,7 +479,10 @@ Innovation.prototype.aChooseAndTuck = function(opts) {
 
 Innovation.prototype.aClaimAchievement = function(player, opts={}) {
   let card
-  if (opts.name) {
+  if (opts.card) {
+    card = opts.card
+  }
+  else if (opts.name) {
     card = this.getCardByName(opts.name)
   }
   else if (opts.age) {
@@ -925,14 +928,16 @@ Innovation.prototype.getZoneByPlayer = function(player, name) {
 // Setters
 
 Innovation.prototype.mAchievementCheck = function() {
-  /* const available = this.getZoneById('achievements').cards
-   * for (const player of this.getPlayersStartingCurrent()) {
-   *   for (const card of available) {
-   *     if (card.checkPlayerIsEligible && card.checkPlayerIsEligible(player)) {
-   *       this.aClaimAchievement(player, card)
-   *     }
-   *   }
-   * } */
+  const available = this.getZoneById('achievements').cards
+  for (const player of this.getPlayersStartingCurrent()) {
+    for (const card of available) {
+      if (card.checkPlayerIsEligible && card.checkPlayerIsEligible(this, player)) {
+        // It is safe to return here. Claiming an achievement will retrigger this
+        // function, allowing players to claim more than one achievement per turn.
+        return this.aClaimAchievement(player, { card })
+      }
+    }
+  }
 }
 
 Innovation.prototype.mAchieve = function(player, card) {

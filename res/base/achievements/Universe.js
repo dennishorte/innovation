@@ -7,7 +7,7 @@ module.exports = function() {
   this.checkPlayerIsEligible = function(game, player) {
     return game
       .utilColors()
-      .map(color => (game.getCardTop(player, color) || {}).age)
+      .map(color => (game.getTopCard(player, color) || {}).age)
       .every(age => age >= 8)
   }
 }
