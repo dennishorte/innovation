@@ -197,6 +197,16 @@ TestUtil.setDeckTop = function(game, exp, age, cardNames) {
   }
 }
 
+TestUtil.setForecast = function(game, playerName, cardNames) {
+  TestUtil.clearHand(game, playerName)
+  const player = game.getPlayerByName(playerName)
+  const forecast = game.getZoneByPlayer(player, 'forecast')
+  for (const name of cardNames) {
+    const card = game.getCardByName(name)
+    game.mMoveCardTo(card, forecast)
+  }
+}
+
 TestUtil.setHand = function(game, playerName, cardNames) {
   TestUtil.clearHand(game, playerName)
   const player = game.getPlayerByName(playerName)
