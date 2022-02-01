@@ -580,15 +580,22 @@ Innovation.prototype.aDraw = function(player, opts={}) {
   return this.mDraw(player, adjustedExp, adjustedAge, opts)
 }
 
-Innovation.prototype.aDrawAndReveal = function(player, opts={}) {
-  const card = this.aDraw(player, opts)
+Innovation.prototype.aDrawAndMeld = function(player, age, opts={}) {
+  const card = this.aDraw(player, {...opts, age })
   if (card) {
-    return this.mReveal(card, opts)
+    return this.mMeld(player, card, opts)
   }
 }
 
-Innovation.prototype.aDrawAndScore = function(player, opts={}) {
-  const card = this.aDraw(player, opts)
+Innovation.prototype.aDrawAndReveal = function(player, age, opts={}) {
+  const card = this.aDraw(player, {...opts, age })
+  if (card) {
+    return this.mReveal(player, card, opts)
+  }
+}
+
+Innovation.prototype.aDrawAndScore = function(player, age, opts={}) {
+  const card = this.aDraw(player, {...opts, age })
   if (card) {
     return this.aScore(player, card, opts)
   }
