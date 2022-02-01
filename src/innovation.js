@@ -374,6 +374,7 @@ Innovation.prototype.endTurn = function() {
 // Actions
 
 Innovation.prototype.aCardEffects = function(
+  leader,
   player,
   card,
   kind,
@@ -381,13 +382,10 @@ Innovation.prototype.aCardEffects = function(
   sharing=[],
   demanding=[]
 ) {
-  const leader = this.getPlayerCurrent()
-
   for (let i = 0; i < card[kind].length; i++) {
     const effectText = card[kind][i]
     const effectImpl = card[`${kind}Impl`][i]
     const isDemand = effectText.startsWith('I demand')
-
 
     const demand = isDemand && demanding.includes(player)
     const share = !isDemand && sharing.includes(player)
@@ -534,14 +532,15 @@ Innovation.prototype.aDogma = function(player, card, opts={}) {
     effectCards.push(card)
   }
 
+  const leader = this.getPlayerCurrent()
   for (const ecard of effectCards) {
     for (const player of this.getPlayersStartingNext()) {
-      this.aCardEffects(player, ecard, 'echo', biscuits, sharing, demanding)
+      this.aCardEffects(leader, player, ecard, 'echo', biscuits, sharing, demanding)
 
       // Only the top card (or the artifact card for free artifact dogma actions)
       // get to do their dogma effects.
       if (ecard === card) {
-        this.aCardEffects(player, ecard, 'dogma', biscuits, sharing, demanding)
+        this.aCardEffects(leader, player, ecard, 'dogma', biscuits, sharing, demanding)
       }
     }
   }
@@ -626,6 +625,12 @@ Innovation.prototype.aScore = function(player, card, opts={}) {
   return this.mScore(player, card, opts)
 }
 
+Innovation.prototype.aScoreMany = function(player, cards, opts={}) {
+  for (const card of [...cards]) {
+    this.aScore(player, card, opts)
+  }
+}
+
 Innovation.prototype.aSplay = function(player, color, direction, opts={}) {
   const karmaKind = this.aKarma(player, 'transfer', { ...opts, color, direction })
   if (karmaKind === 'would-instead') {
@@ -651,6 +656,16 @@ Innovation.prototype.aTuck = function(player, card, opts={}) {
   }
 
   return this.mTuck(player, card, opts)
+}
+
+Innovation.prototype.aYesNo = function(player, title) {
+  const result = this.requestInputSingle({
+    actor: player.name,
+    title,
+    choices: ['yes', 'no'],
+  })[0]
+
+  return result === 'yes'
 }
 
 
@@ -1040,6 +1055,17 @@ Innovation.prototype.mLog = function(msg) {
   this.state.log.push(msg)
 
   return msg.id
+}
+
+Innovation.prototype.mLogDoNothing = function(player) {
+  this.mLog({
+    template: '{player} does nothing',
+    args: { player }
+  })
+}
+
+Innovation.prototype.mLogNoEffect = function() {
+  this.mLog({ template: 'no effect' })
 }
 
 Innovation.prototype.mLogIndent = function() {
