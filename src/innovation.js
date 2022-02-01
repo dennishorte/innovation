@@ -400,7 +400,7 @@ Innovation.prototype.aCardEffects = function(
       })
       this.mLogIndent()
 
-      effectImpl(this, player)
+      effectImpl(this, player, { biscuits })
 
       this.mLogOutdent()
     }
@@ -410,16 +410,17 @@ Innovation.prototype.aCardEffects = function(
 
 Innovation.prototype.aChooseAndScore = function(opts) {
   const player = this.getPlayerByName(opts.actor)
-  const cards = this.requestInputSingle(opts)
-  if (cards.length === 0) {
+  const cardNames = this.requestInputSingle(opts)
+  if (cardNames.length === 0) {
     this.mLog({
       template: '{player} does nothing',
       args: { player }
     })
   }
   else {
-    const card = this.getCardByName(cards[0])
-    this.aScore(player, card)
+    cardNames
+      .map(c => this.getCardByName(c))
+      .forEach(card => this.aScore(player, card))
   }
 }
 
@@ -427,17 +428,17 @@ Innovation.prototype.aChooseAndSplay = function(opts) {
   const player = this.getPlayerByName(opts.actor)
 
   if (!opts.choices) {
-    const choices = this
-      .utilColors()
-      .filter(color => this.getZoneByPlayer(player, color).splay !== 'left')
-      .filter(color => this.getZoneByPlayer(player, color).cards.length > 1)
+    opts.choices = this.utilColors()
+  }
 
-    if (choices.length === 0) {
-      this.mLog({ template: 'no effect' })
-      return
-    }
+  opts.choices = opts
+    .choices
+    .filter(color => this.getZoneByPlayer(player, color).splay !== opts.direction)
+    .filter(color => this.getZoneByPlayer(player, color).cards.length > 1)
 
-    opts.choices = choices
+  if (opts.choices.length === 0) {
+    this.mLog({ template: 'no effect' })
+    return
   }
 
   const colors = this.requestInputSingle(opts)
@@ -449,6 +450,22 @@ Innovation.prototype.aChooseAndSplay = function(opts) {
   }
   else {
     this.aSplay(player, colors[0], opts.direction)
+  }
+}
+
+Innovation.prototype.aChooseAndTuck = function(opts) {
+  const player = this.getPlayerByName(opts.actor)
+  const cardNames = this.requestInputSingle(opts)
+  if (cardNames.length === 0) {
+    this.mLog({
+      template: '{player} does nothing',
+      args: { player }
+    })
+  }
+  else {
+    cardNames
+      .map(c => this.getCardByName(c))
+      .forEach(card => this.aTuck(player, card))
   }
 }
 
@@ -625,6 +642,15 @@ Innovation.prototype.aTransfer = function(player, card, target, opts={}) {
   }
 
   return this.mTransfer(player, card, target, opts)
+}
+
+Innovation.prototype.aTuck = function(player, card, opts={}) {
+  const karmaKind = this.aKarma(player, 'tuck', { ...opts, card })
+  if (karmaKind === 'would-instead') {
+    return
+  }
+
+  return this.mTuck(player, card, opts)
 }
 
 

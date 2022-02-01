@@ -106,10 +106,18 @@ TestUtil.fixtureTopCard = function(cardName, options) {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// Player shortcuts
+// Data Shortcuts
 
 TestUtil.dennis = function(game) {
   return game.getPlayerByName('dennis')
+}
+
+TestUtil.cards = function(game, zoneName) {
+  return TestUtil.zone(game, zoneName).cards.map(c => c.name)
+}
+
+TestUtil.zone = function(game, zoneName) {
+  return game.getZoneByPlayer(game.getPlayerByName('dennis'), zoneName)
 }
 
 
