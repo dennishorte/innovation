@@ -188,6 +188,7 @@ Innovation.prototype.initializeZonesPlayers = function() {
     zones.players[player.name] = root
 
     for (const color of ['red', 'yellow', 'green', 'blue', 'purple']) {
+      root[color].color = color
       root[color].splay = 'none'
     }
   }
@@ -407,6 +408,19 @@ Innovation.prototype.aCardEffects = function(
   }
 }
 
+Innovation.prototype.aChooseAndSplay = function(player, opts) {
+  const colors = this.requestInputSingle(opts)
+  if (colors.length === 0) {
+    game.mLog({
+      template: '{player} does nothing',
+      args: { player }
+    })
+  }
+  else {
+    this.aSplay(player, colors[0], opts.direction)
+  }
+}
+
 Innovation.prototype.aClaimAchievement = function(player, opts={}) {
   let card
   if (opts.name) {
@@ -562,6 +576,15 @@ Innovation.prototype.aScore = function(player, card, opts={}) {
   }
 
   return this.mScore(player, card, opts)
+}
+
+Innovation.prototype.aSplay = function(player, color, direction, opts={}) {
+  const karmaKind = this.aKarma(player, 'transfer', { ...opts, color, direction })
+  if (karmaKind === 'would-instead') {
+    return
+  }
+
+  return this.mSplay(player, color, direction, opts)
 }
 
 Innovation.prototype.aTransfer = function(player, card, target, opts={}) {

@@ -17,47 +17,51 @@ function Card() {
   ]
 
   this.dogmaImpl = [
-    {
-      dogma: `If your red cards are splayed up, you may splay any one color of your cards up.`,
-      steps: [
-        {
-          description: `You may splay your red cards up.`,
-          func(context, player) {
-            const { game } = context
-            const red = game.getZoneColorByPlayer(player, 'red')
-            if (red.splay === 'up') {
-              return game.aChooseAndSplay(context, {
-                playerName: player.name,
-                direction: 'up'
-              })
-            }
-          }
-        }
-      ]
+    (game, player) => {
+      const redSplay = game.getZoneByPlayer(player, 'red').splay
+      if (redSplay === 'up') {
+        const otherColors = game
+          .utilColors()
+          .map(color => game.getZoneByPlayer(player, color))
+          .filter(zone => zone.splay !== 'up')
+          .map(zone => zone.color)
+
+        game.aChooseAndSplay(player, {
+          actor: player.name,
+          title: 'Choose a Color',
+          choices: otherColors,
+          min: 0,
+          max: 1,
+          direction: 'up'
+        })
+      }
+      else {
+        game.mLog({ template: 'no effect' })
+      }
     },
-    {
-      dogma: `You may splay your red cards up.`,
-      steps: [
-        {
-          description: `You may splay your red cards up.`,
-          func(context, player) {
-            const { game } = context
-            return game.aChooseAndSplay(context, {
-              playerName: player.name,
-              choices: ['red'],
-              direction: 'up'
-            })
-          }
-        }
-      ]
-    },
+    (game, player) => {
+      const redSplay = game.getZoneByPlayer(player, 'red').splay
+      if (redSplay === 'up') {
+        game.mLog({ template: 'no effect' })
+      }
+      else {
+        game.aChooseAndSplay(player, {
+          actor: player.name,
+          title: 'Choose a Color',
+          choices: ['red'],
+          min: 0,
+          max: 1,
+          direction: 'up'
+        })
+      }
+    }
   ]
   this.echoImpl = []
   this.inspireImpl = []
   this.karmaImpl = []
 }
 
-Card.prototype = Object.create(CardBase.prototype)
+  Card.prototype = Object.create(CardBase.prototype)
 Object.defineProperty(Card.prototype, `constructor`, {
   value: Card,
   enumerable: false,

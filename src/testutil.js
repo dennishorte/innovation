@@ -94,11 +94,27 @@ TestUtil.fixtureFirstPlayer = function(options) {
 TestUtil.fixtureTopCard = function(cardName, options) {
   const game = TestUtil.fixtureFirstPlayer(options)
   game.testSetBreakpoint('before-first-player', (game) => {
+    game
+      .getPlayerAll()
+      .forEach(player => TestUtil.clearBoard(game, player.name))
+
     const card = game.getCardByName(cardName)
     TestUtil.setColor(game, game.getPlayerCurrent().name, card.color, [cardName])
   })
   return game
 }
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Player shortcuts
+
+TestUtil.dennis = function(game) {
+  return game.getPlayerByName('dennis')
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Handy functions
 
 TestUtil.choose = function(game, request, ...selections) {
   const selector = request.selectors[0]
@@ -171,6 +187,12 @@ TestUtil.setHand = function(game, playerName, cardNames) {
     const card = game.getCardByName(name)
     game.mMoveCardTo(card, hand)
   }
+}
+
+TestUtil.setSplay = function(game, playerName, color, direction) {
+  const player = game.getPlayerByName(playerName)
+  const zone = game.getZoneByPlayer(player, color)
+  zone.splay = direction
 }
 
 
