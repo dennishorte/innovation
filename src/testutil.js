@@ -179,6 +179,16 @@ TestUtil.setColor = function(game, playerName, colorName, cardNames) {
   }
 }
 
+TestUtil.setDeckTop = function(game, exp, age, cardNames) {
+  const deck = game.getZoneByDeck(exp, age)
+  const cards = cardNames
+    .map(c => game.getCardByName(c))
+    .reverse()
+  for (const card of cards) {
+    game.mMoveCardToTop(card, deck)
+  }
+}
+
 TestUtil.setHand = function(game, playerName, cardNames) {
   TestUtil.clearHand(game, playerName)
   const player = game.getPlayerByName(playerName)

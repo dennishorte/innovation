@@ -951,6 +951,12 @@ Innovation.prototype.mMoveCardTo = function(card, target) {
   return this.mMoveByIndices(source, sourceIndex, target, target.cards.length)
 }
 
+Innovation.prototype.mMoveCardToTop = function(card, target) {
+  const source = this.getZoneByCard(card)
+  const sourceIndex = source.cards.findIndex(c => c === card)
+  return this.mMoveByIndices(source, sourceIndex, target, 0)
+}
+
 Innovation.prototype.mMoveTopCard = function(source, target) {
   return this.mMoveByIndices(source, 0, target, target.cards.length)
 }

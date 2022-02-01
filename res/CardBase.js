@@ -30,6 +30,10 @@ CardBase.prototype.checkHasEcho = function() {
   return this.echo.length > 0
 }
 
+CardBase.prototype.checkHasBiscuit = function(biscuit) {
+  return this.biscuits.includes(biscuit)
+}
+
 CardBase.prototype.getBiscuits = function(splay) {
   if (splay === 'top') {
     return this.biscuits
