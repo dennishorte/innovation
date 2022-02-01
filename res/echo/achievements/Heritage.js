@@ -4,11 +4,12 @@ module.exports = function() {
   this.exp = 'echo'
   this.text = 'Have eight visible hexes in one color.'
   this.alt = 'Loom'
+  this.isSpecialAchievement = true
   this.checkPlayerIsEligible = function(game, player) {
     return game
       // Grab each stack
       .utilColors()
-      .map(color => game.getZoneColorByPlayer(player, color))
+      .map(color => game.getZoneByPlayer(player, color))
 
       // Convert each stack to a count of hexes
       .map(zone => zone
