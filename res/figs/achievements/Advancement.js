@@ -6,6 +6,7 @@ function Card() {
   this.exp = 'figs'
   this.text = 'Draw a card of value two higher than your highest top card.'
   this.alt = ''
+  this.isSpecialAchievement = true
   this.decreeImpl = [{
     dogma: 'Draw a card of value two higher than your highest top card.',
     steps: [

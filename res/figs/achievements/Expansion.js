@@ -6,6 +6,7 @@ function Card() {
   this.exp = 'figs'
   this.text = 'Splay any one of your colors up.'
   this.alt = ''
+  this.isSpecialAchievement = true
   this.decreeImpl = [{
     dogma: '',
     steps: [

@@ -146,6 +146,143 @@ describe('Innovation', () => {
       })
     })
 
+    describe('achieve action', () => {
+      test('do not need to achieve in order', () => {
+        const game = t.fixtureFirstPlayer()
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.setScore(game, 'dennis', ['Canning', 'Experimentation', 'Coal'])
+          t.setColor(game, 'dennis', 'red', ['Industrialization'])
+          t.setAvailableAchievements(game, ['Writing', 'Mathematics', 'Machinery', 'Reformation'])
+        })
+        const request1 = game.run()
+
+        expect(t.getChoices(request1, 'Achieve')).toStrictEqual(['age 1', 'age 2', 'age 3'])
+      })
+
+      test('duplicate achievements are deduped', () => {
+        const game = t.fixtureFirstPlayer()
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.setScore(game, 'dennis', ['Canning', 'Experimentation', 'Coal'])
+          t.setColor(game, 'dennis', 'red', ['Industrialization'])
+          t.setAvailableAchievements(game, ['Writing', 'The Wheel', 'Construction', 'Mathematics', 'Machinery'])
+        })
+        const request1 = game.run()
+
+        expect(t.getChoices(request1, 'Achieve')).toStrictEqual(['age 1', 'age 2', 'age 3'])
+      })
+
+      test('cost for second of same age is double (part 1)', () => {
+        const game = t.fixtureFirstPlayer({ expansions: ['base', 'echo'] })
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.setScore(game, 'dennis', ['Canning', 'Experimentation', 'Coal', 'Enterprise']) // 19
+          t.setColor(game, 'dennis', 'red', ['Industrialization'])
+          t.setAchievements(game, 'dennis', ['Monotheism'])
+          t.setAvailableAchievements(game, ['Construction', 'Machinery'])
+        })
+        const request1 = game.run()
+
+        expect(t.getChoices(request1, 'Achieve')).toStrictEqual(['age 3'])
+      })
+
+      test('cost for second of same age is double (part 2)', () => {
+        const game = t.fixtureFirstPlayer({ expansions: ['base', 'echo'] })
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.setScore(game, 'dennis', ['Canning', 'Experimentation', 'Coal', 'Statistics']) // 20
+          t.setColor(game, 'dennis', 'red', ['Industrialization'])
+          t.setAchievements(game, 'dennis', ['Monotheism'])
+          t.setAvailableAchievements(game, ['Construction', 'Machinery'])
+        })
+        const request1 = game.run()
+
+        expect(t.getChoices(request1, 'Achieve')).toStrictEqual(['age 2', 'age 3'])
+      })
+
+      test('cost for third of same age is triple (part 1)', () => {
+        const game = t.fixtureFirstPlayer({ expansions: ['base', 'echo'] })
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.setScore(game, 'dennis', ['Canning', 'Experimentation', 'Enterprise']) // 14
+          t.setColor(game, 'dennis', 'red', ['Industrialization'])
+          t.setAchievements(game, 'dennis', ['The Wheel', 'Code of Laws'])
+          t.setAvailableAchievements(game, ['Mysticism'])
+        })
+        const request1 = game.run()
+
+        expect(t.getChoices(request1, 'Achieve')).toStrictEqual([])
+
+      })
+
+      test('cost for third of same age is triple (part 2)', () => {
+        const game = t.fixtureFirstPlayer({ expansions: ['base', 'echo'] })
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.setScore(game, 'dennis', ['Canning', 'Experimentation', 'Statistics']) // 15
+          t.setColor(game, 'dennis', 'red', ['Industrialization'])
+          t.setAchievements(game, 'dennis', ['The Wheel', 'Code of Laws'])
+          t.setAvailableAchievements(game, ['Mysticism'])
+        })
+        const request1 = game.run()
+
+        expect(t.getChoices(request1, 'Achieve')).toStrictEqual(['age 1'])
+
+      })
+
+      test('age restriction', () => {
+        const game = t.fixtureFirstPlayer()
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.setScore(game, 'dennis', ['Canning', 'Experimentation', 'Coal'])
+          t.setColor(game, 'dennis', 'red', ['Construction'])
+          t.setAvailableAchievements(game, ['Writing', 'Mathematics', 'Machinery', 'Reformation'])
+        })
+        const request1 = game.run()
+
+        expect(t.getChoices(request1, 'Achieve')).toStrictEqual(['age 1', 'age 2'])
+      })
+
+      test('achieved cards are moved to achievements', () => {
+        const game = t.fixtureFirstPlayer()
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.setScore(game, 'dennis', ['Canning', 'Experimentation', 'Coal'])
+          t.setColor(game, 'dennis', 'red', ['Construction'])
+          t.setAvailableAchievements(game, ['The Wheel', 'Monotheism', 'Machinery'])
+        })
+        const request1 = game.run()
+        const request2 = t.choose(game, request1, 'Achieve.age 2')
+
+        expect(t.cards(game, 'achievements')).toStrictEqual(['Monotheism'])
+      })
+
+      test('in figures, opponents get a figure', () => {
+        const game = t.fixtureFirstPlayer({ expansions: ['base', 'figs'] })
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.setScore(game, 'dennis', ['Canning', 'Experimentation', 'Coal'])
+          t.setColor(game, 'dennis', 'red', ['Construction'])
+          t.setAvailableAchievements(game, ['The Wheel', 'Monotheism', 'Machinery'])
+
+          t.setDeckTop(game, 'figs', 1, ['Imhotep'])
+          t.setHand(game, 'micah', [])
+        })
+        const request1 = game.run()
+        const request2 = t.choose(game, request1, 'Achieve.age 2')
+
+        expect(t.cards(game, 'hand', 'micah')).toStrictEqual(['Imhotep'])
+      })
+
+      test('in figures, opponents do not get a figure for non-standard', () => {
+        const game = t.fixtureFirstPlayer()
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.setScore(game, 'dennis', ['Canning', 'Experimentation', 'Coal'])
+          t.setColor(game, 'dennis', 'red', ['Construction'])
+          t.setAvailableAchievements(game, ['The Wheel', 'Monotheism', 'Machinery'])
+
+          t.setDeckTop(game, 'figs', 1, ['Imhotep'])
+          t.setHand(game, 'micah', [])
+        })
+        const request1 = game.run()
+        const request2 = t.choose(game, request1, 'Achieve.age 2')
+
+        expect(t.cards(game, 'hand', 'micah')).toStrictEqual([])
+      })
+    })
+
     describe('dogma action', () => {
       test('echo', () => {
         const game = t.fixtureFirstPlayer({ expansions: ['base', 'echo'] })
@@ -179,15 +316,15 @@ describe('Innovation', () => {
         expect(micahHandAges).toStrictEqual([1, 2])
       })
 
-      test.skip('demand', () => {
-
+      test('demand', () => {
+        // See tests for Construction to see a successful demand.
       })
 
       test.skip('compel', () => {
 
       })
 
-      test.skip('biscuits change during dogma', () => {
+      test.skip('biscuits change during dogma does not affect effects', () => {
 
       })
     })
@@ -242,10 +379,6 @@ describe('Innovation', () => {
     })
 
     test('forecast', () => {
-
-    })
-
-    test('achievement trigger', () => {
 
     })
 

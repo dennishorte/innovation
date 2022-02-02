@@ -91,6 +91,15 @@ Innovation.prototype.initializeTeams = function() {
 Innovation.prototype.initializeZones = function() {
   this.state.zones = {}
   this.initializeZonesDecks()
+
+  // Set the home zone of all cards before moving them around.
+  this._walkZones(this.state.zones, (zone, path) => {
+    zone.id = path.join('.')
+    for (const card of zone.cards) {
+      card.home = zone.id
+    }
+  })
+
   this.initializeZonesAchievements()
   this.initializeZonesPlayers()
   this.state.zones.exile = {
@@ -103,7 +112,6 @@ Innovation.prototype.initializeZones = function() {
   this._walkZones(this.state.zones, (zone, path) => {
     zone.id = path.join('.')
     for (const card of zone.cards) {
-      card.home = zone.id
       card.zone = zone.id
       card.visibility = []
     }
@@ -329,7 +337,11 @@ Innovation.prototype.action = function(count) {
   const name = chosenAction.name
   const arg = chosenAction.selection[0]
 
-  if (name === 'Dogma') {
+  if (name === 'Achieve') {
+    const age = parseInt(arg.slice(4))
+    this.aClaimAchievement(player, { age, isStandard: true })
+  }
+  else if (name === 'Dogma') {
     const card = this.getCardByName(arg)
     this.aDogma(player, card)
   }
@@ -499,7 +511,15 @@ Innovation.prototype.aClaimAchievement = function(player, opts={}) {
     return
   }
 
-  return this.mAchieve(player, card)
+  this.mAchieve(player, card)
+
+  if (opts.isStandard && this.getExpansionList().includes('figs')) {
+    for (const opp of this.getPlayerOpponents(player)) {
+      this.aDraw(opp, { exp: 'figs' })
+    }
+  }
+
+  return card
 }
 
 Innovation.prototype.aDogma = function(player, card, opts={}) {
@@ -566,7 +586,7 @@ Innovation.prototype.aDogma = function(player, card, opts={}) {
       args: { player }
     })
     this.mLogIndent()
-    this.aDraw(player, { share: true })
+    this.aDraw(player, { exp: 'figs', share: true })
     this.mLogOutdent()
   }
 
@@ -582,7 +602,7 @@ Innovation.prototype.aDraw = function(player, opts={}) {
   const { age, share } = opts
 
   // Expansion the user should draw from, before looking at empty decks.
-  const baseExp = this._determineBaseDrawExpansion(player, share)
+  const baseExp = opts.exp || this._determineBaseDrawExpansion(player, share)
 
   // If age is not specified, draw based on player's current highest top card.
   const highestTopCard = this.getHighestTopCard(player) || {}
@@ -1367,7 +1387,7 @@ Innovation.prototype._adjustedDrawDeck = function(age, exp) {
 }
 
 // Determine which expansion to draw from.
-Innovation.prototype._determineBaseDrawExpansion = function(player, share) {
+Innovation.prototype._determineBaseDrawExpansion = function(player) {
   if (this.getExpansionList().includes('echo')) {
     const hand = this.getZoneByPlayer(player, 'hand')
     const echoesCards = hand.cards.filter(c => c.expansion === 'echo')
@@ -1375,16 +1395,12 @@ Innovation.prototype._determineBaseDrawExpansion = function(player, share) {
       return 'echo'
     }
   }
-  if (share && this.getExpansionList().includes('figs')) {
-    return 'figs'
-  }
-
   return 'base'
 }
 
 Innovation.prototype._generateActionChoices = function() {
   const choices = []
-  //choices.push(this._generateActionChoicesAchieve())
+  choices.push(this._generateActionChoicesAchieve())
   //choices.push(this._generateActionChoicesDecree())
   choices.push(this._generateActionChoicesDogma())
   choices.push(this._generateActionChoicesDraw())
@@ -1392,6 +1408,39 @@ Innovation.prototype._generateActionChoices = function() {
   //choices.push(this._generateActionChoicesInspire())
   choices.push(this._generateActionChoicesMeld())
   return choices
+}
+
+Innovation.prototype._scoreCost = function(player, card) {
+  const sameAge = this
+    .getZoneByPlayer(player, 'achievements')
+    .cards
+    .filter(c => c.age === card.age)
+
+  return card.age * 5 * (sameAge.length + 1)
+}
+
+Innovation.prototype._generateActionChoicesAchieve = function() {
+  const player = this.getPlayerCurrent()
+  const playerScore = this.getScore(player)
+  const topCard = this.getHighestTopCard(player)
+  const topCardAge = topCard ? topCard.age : 0
+  const eligible = this
+    .getZoneById('achievements')
+    .cards
+    .filter(c => !c.isSpecialAchievement)
+    .filter(card => {
+      const ageRequirement = card.age <= topCardAge
+      const scoreRequirement = this._scoreCost(player, card) <= playerScore
+      return ageRequirement && scoreRequirement
+    })
+    .map(ach => `age ${ach.age}`)
+    .sort()
+  const distinct = util.array.distinct(eligible).sort()
+
+  return {
+    name: 'Achieve',
+    choices: distinct
+  }
 }
 
 Innovation.prototype._generateActionChoicesDogma = function() {

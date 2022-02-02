@@ -112,12 +112,12 @@ TestUtil.dennis = function(game) {
   return game.getPlayerByName('dennis')
 }
 
-TestUtil.cards = function(game, zoneName) {
-  return TestUtil.zone(game, zoneName).cards.map(c => c.name)
+TestUtil.cards = function(game, zoneName, playerName='dennis') {
+  return TestUtil.zone(game, zoneName, playerName).cards.map(c => c.name)
 }
 
-TestUtil.zone = function(game, zoneName) {
-  return game.getZoneByPlayer(game.getPlayerByName('dennis'), zoneName)
+TestUtil.zone = function(game, zoneName, playerName='dennis') {
+  return game.getZoneByPlayer(game.getPlayerByName(playerName), zoneName)
 }
 
 
@@ -175,6 +175,41 @@ TestUtil.clearHands = function(game) {
   }
 }
 
+TestUtil.getChoices = function(request, kind) {
+  return request
+    .selectors[0]
+    .choices
+    .find(c => c.name === kind)
+    .choices
+}
+
+TestUtil.setAchievements = function(game, playerName, cardNames) {
+  const player = game.getPlayerByName(playerName)
+  const zone = game.getZoneByPlayer(player, 'achievements')
+  const cards = cardNames.map(name => game.getCardByName(name))
+  for (const card of [...zone.cards]) {
+    game.mReturn(player, card, { silent: true })
+  }
+  for (const card of cards) {
+    game.mMoveCardTo(card, zone)
+  }
+}
+
+TestUtil.setAvailableAchievements = function(game, cardNames) {
+  const cards = cardNames.map(name => game.getCardByName(name))
+  const zone = game.getZoneById('achievements')
+
+  for (const card of [...zone.cards]) {
+    if (!card.isSpecialAchievement) {
+      game.mMoveCardTo(card, game.getZoneById(card.home))
+    }
+  }
+
+  for (const card of cards) {
+    game.mMoveCardTo(card, zone)
+  }
+}
+
 TestUtil.setColor = function(game, playerName, colorName, cardNames) {
   const player = game.getPlayerByName(playerName)
   const zone = game.getZoneByPlayer(player, colorName)
@@ -214,6 +249,16 @@ TestUtil.setHand = function(game, playerName, cardNames) {
   for (const name of cardNames) {
     const card = game.getCardByName(name)
     game.mMoveCardTo(card, hand)
+  }
+}
+
+TestUtil.setScore = function(game, playerName, cardNames) {
+  TestUtil.clearHand(game, playerName)
+  const player = game.getPlayerByName(playerName)
+  const score = game.getZoneByPlayer(player, 'score')
+  for (const name of cardNames) {
+    const card = game.getCardByName(name)
+    game.mMoveCardTo(card, score)
   }
 }
 
