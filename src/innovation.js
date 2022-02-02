@@ -769,7 +769,7 @@ Innovation.prototype.getBiscuitsByPlayer = function(player) {
     .reduce((l, r) => this.utilCombineBiscuits(l, r))
 
   return this
-    .getCardsByKarmaTrigger(player, 'calculate-biscuits')
+    .getInfoByKarmaTrigger(player, 'calculate-biscuits')
     .map(card => this.utilApplyKarma(card, 'calculate-biscuits', this, player, board))
     .reduce((l, r) => this.utilCombineBiscuits(l, r), boardBiscuits)
 }
@@ -817,10 +817,23 @@ Innovation.prototype.getCardByName = function(name) {
   return res.all.byName[name]
 }
 
-Innovation.prototype.getCardsByKarmaTrigger = function(player, trigger) {
-  return this
-    .getTopCards(player)
-    .filter(card => card.hasKarma(trigger))
+Innovation.prototype.getInfoByKarmaTrigger = function(player, trigger) {
+  const matches = []
+
+  for (const card of this.getTopCards(player)) {
+    for (let i = 0; i < card.karma.length; i++) {
+      if (card.karmaImpl[i].trigger === trigger) {
+        matches.push({
+          card,
+          index: i,
+          text: card.karma[i],
+          impl: card.karmaImpl[i]
+        })
+      }
+    }
+  }
+
+  return matches
 }
 
 Innovation.prototype.getExpansionList = function() {
@@ -903,12 +916,12 @@ Innovation.prototype.getScore = function(player) {
   const bonuses = this.getBonuses(player)
   const bonusPoints = (bonuses[0] || 1) + (bonuses.length - 1)
 
-  const karma = this
-    .getCardsByKarmaTrigger(player, 'calculate-score')
-    .map(card => this.utilApplyKarma(card, 'calculate-score', this, player))
-    .reduce((l, r) => l + r, 0)
-
-  return inScore + bonusPoints + karma
+  /* const karma = this
+   *   .getInfoByKarmaTrigger(player, 'calculate-score')
+   *   .map(card => this.utilApplyKarma(card, 'calculate-score', this, player))
+   *   .reduce((l, r) => l + r, 0)
+   */
+  return inScore + bonusPoints //+ karma
 }
 
 Innovation.prototype.getTopCard = function(player, color) {
@@ -1251,6 +1264,18 @@ Game.prototype.utilColors = function() {
   ]
 }
 
+Innovation.prototype.utilColorToDecree = function(color) {
+  switch (color) {
+    case 'red': return 'War';
+    case 'yellow': return 'Expansion';
+    case 'green': return 'Trade';
+    case 'blue': return 'Advancement';
+    case 'purple': return 'Rivalry';
+    default:
+      throw new Error(`Unknown color ${color}`)
+  }
+}
+
 Innovation.prototype.utilCombineBiscuits = function(left, right) {
   const combined = this.utilEmptyBiscuits()
   for (const biscuit of Object.keys(combined)) {
@@ -1338,7 +1363,6 @@ Innovation.prototype.utilParseBiscuits = function(biscuitString) {
 }
 
 Innovation.prototype.utilSeparateByAge = function(cards) {
-  cards = this._adjustCardsParam(cards)
   const byAge = {}
   for (const card of cards) {
     if (byAge.hasOwnProperty(card.age)) {
@@ -1401,7 +1425,7 @@ Innovation.prototype._determineBaseDrawExpansion = function(player) {
 Innovation.prototype._generateActionChoices = function() {
   const choices = []
   choices.push(this._generateActionChoicesAchieve())
-  //choices.push(this._generateActionChoicesDecree())
+  choices.push(this._generateActionChoicesDecree())
   choices.push(this._generateActionChoicesDogma())
   choices.push(this._generateActionChoicesDraw())
   //choices.push(this._generateActionChoicesEndorse())
@@ -1443,8 +1467,41 @@ Innovation.prototype._generateActionChoicesAchieve = function() {
   }
 }
 
+Innovation.prototype._generateActionChoicesDecree = function() {
+  const player = this.getPlayerCurrent()
+
+  const figuresInHand = this
+    .getZoneByPlayer(player, 'hand')
+    .cards
+    .filter(c => c.expansion === 'figs')
+
+  const figuresByAge = this.utilSeparateByAge(figuresInHand)
+
+  const availableDecrees = []
+
+  if (Object.keys(figuresByAge).length >= 3) {
+    figuresInHand
+      .map(card => card.color)
+      .map(color => this.utilColorToDecree(color))
+      .forEach(decree => util.array.pushUnique(availableDecrees, decree))
+  }
+
+  if (figuresInHand.length >= 2) {
+    this
+      .getInfoByKarmaTrigger(player, 'decree-for-two')
+      .map(info => info.impl.decree)
+      .forEach(decree => util.array.pushUnique(availableDecrees, decree))
+  }
+
+  return {
+    name: 'Decree',
+    choices: availableDecrees.sort()
+  }
+}
+
 Innovation.prototype._generateActionChoicesDogma = function() {
   const player = this.getPlayerCurrent()
+
   const dogmaTargets = this
     .utilColors()
     .map(color => this.getZoneByPlayer(player, color))

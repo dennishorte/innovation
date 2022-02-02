@@ -283,6 +283,81 @@ describe('Innovation', () => {
       })
     })
 
+    describe('decree action', () => {
+      test('from three figure cards', () => {
+        const game = t.fixtureFirstPlayer({ expansions: ['base', 'figs'] })
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.setHand(game, 'dennis', ['Homer', 'Ptolemy', 'Al-Kindi'])
+        })
+        const request1 = game.run()
+
+        expect(t.getChoices(request1, 'Decree')).toStrictEqual([
+          'Rivalry',
+          'Trade',
+        ])
+      })
+
+      test('from three figure cards (same age does not work)', () => {
+        const game = t.fixtureFirstPlayer({ expansions: ['base', 'figs'] })
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.setHand(game, 'dennis', ['Homer', 'Sinuhe', 'Ptolemy'])
+        })
+        const request1 = game.run()
+
+        expect(t.getChoices(request1, 'Decree')).toStrictEqual([])
+      })
+
+      test('all colors work', () => {
+        const game = t.fixtureFirstPlayer({ expansions: ['base', 'figs'] })
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.setHand(game, 'dennis', ['Homer', 'Ptolemy', 'Yi Sun-Sin', 'Daedalus', 'Shennong'])
+        })
+        const request1 = game.run()
+
+        expect(t.getChoices(request1, 'Decree')).toStrictEqual([
+          'Advancement',
+          'Expansion',
+          'Rivalry',
+          'Trade',
+          'War',
+        ])
+      })
+
+      test('from two figures and a karma (same age)', () => {
+        const game = t.fixtureFirstPlayer({ expansions: ['base', 'figs'] })
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.setColor(game, 'dennis', 'purple', ['Sinuhe'])
+          t.setHand(game, 'dennis', ['Homer', 'Fu Xi'])
+        })
+        const request1 = game.run()
+
+        expect(t.getChoices(request1, 'Decree')).toStrictEqual(['Rivalry'])
+      })
+
+      test('karma for two figures, but only one in hand', () => {
+        const game = t.fixtureFirstPlayer({ expansions: ['base', 'figs'] })
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.setColor(game, 'dennis', 'purple', ['Sinuhe'])
+          t.setHand(game, 'dennis', ['Homer', 'Mathematics'])
+        })
+        const request1 = game.run()
+
+        expect(t.getChoices(request1, 'Decree')).toStrictEqual([])
+      })
+
+      test('first claim', () => {
+
+      })
+
+      test('already have', () => {
+
+      })
+
+      test('opponent has', () => {
+
+      })
+    })
+
     describe('dogma action', () => {
       test('echo', () => {
         const game = t.fixtureFirstPlayer({ expansions: ['base', 'echo'] })
