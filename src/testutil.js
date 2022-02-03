@@ -60,7 +60,7 @@ TestUtil.fixtureDecrees = function(options={}) {
   options.expansions = options.expansions || ['base', 'figs']
   const game = TestUtil.fixtureFirstPlayer(options)
   game.testSetBreakpoint('before-first-player', (game) => {
-    TestUtil.setHand(game, 'dennis', ['Homer', 'Ptolemy', 'Yi Sun-Sin', 'Daedalus', 'Shennong'])
+    TestUtil.setHand(game, 'dennis', ['Homer', 'Ptolemy', 'Yi Sun-Sin', 'Daedalus', 'Ximen Bao'])
   })
   return game
 }

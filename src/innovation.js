@@ -438,6 +438,23 @@ Innovation.prototype.aChooseCard = function(opts) {
   }
 }
 
+Innovation.prototype.aChoosePlayer = function(opts) {
+  if (opts.choices.length === 0) {
+    this.mLogNoEffect()
+    return undefined
+  }
+
+  const player = this.getPlayerByName(opts.actor)
+  const playerNames = this.requestInputSingle(opts)
+  if (playerNames.length === 0) {
+    this.mLogDoNothing(player)
+    return undefined
+  }
+  else {
+    return this.getPlayerByName(playerNames[0])
+  }
+}
+
 Innovation.prototype.aChooseAndScore = function(opts) {
   const player = this.getPlayerByName(opts.actor)
   const cardNames = this.requestInputSingle(opts)
@@ -566,7 +583,9 @@ Innovation.prototype.aDecree = function(player, name) {
         text: card.text
       }
     })
+    this.mLogIndent()
     card.decreeImpl(this, player)
+    this.mLogOutdent()
   }
 
   this.mLogOutdent()

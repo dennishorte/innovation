@@ -18,7 +18,14 @@ function Card() {
   this.dogmaImpl = []
   this.echoImpl = []
   this.inspireImpl = []
-  this.karmaImpl = []
+  this.karmaImpl = [
+    {
+      trigger: 'foreshadow',
+      func(game, player) {
+
+      },
+    }
+  ]
 }
 
 Card.prototype = Object.create(CardBase.prototype)
