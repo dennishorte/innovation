@@ -468,6 +468,11 @@ Innovation.prototype.aChooseAndSplay = function(opts) {
     return
   }
 
+  if (!opts.count && !opts.min && !opts.max) {
+    opts.min = 0
+    opts.max = 1
+  }
+
   const colors = this.requestInputSingle(opts)
   if (colors.length === 0) {
     this.mLogDoNothing(player)

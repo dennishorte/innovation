@@ -7,21 +7,15 @@ function Card() {
   this.text = 'Splay any one of your colors up.'
   this.alt = ''
   this.isSpecialAchievement = true
-  this.decreeImpl = [{
-    dogma: '',
-    steps: [
-      {
-        description: 'Draw a card of value two higher than your highest top card.',
-        func(context, player) {
-          const { game } = context
-          return game.aChooseAndSplay(context, {
-            playerName: player.name,
-            direction: 'up',
-          })
-        }
-      },
-    ]
-  }]
+  this.decreeImpl = (game, player) => {
+    game.aChooseAndSplay({
+      actor: player.name,
+      title: 'Choose a Color',
+      choices: game.utilColors(),
+      direction: 'up',
+      count: 1,
+    })
+  }
 }
 
 
