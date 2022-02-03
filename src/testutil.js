@@ -136,7 +136,7 @@ TestUtil.zone = function(game, zoneName, playerName='dennis') {
 TestUtil.choose = function(game, request, ...selections) {
   const selector = request.selectors[0]
   selections = selections.map(string => {
-    const tokens = string.split('.')
+    const tokens = typeof string === 'string' ? string.split('.') : [string]
     if (tokens.length === 1) {
       return tokens[0]
     }
