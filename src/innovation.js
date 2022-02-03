@@ -341,6 +341,9 @@ Innovation.prototype.action = function(count) {
     const age = parseInt(arg.slice(4))
     this.aClaimAchievement(player, { age, isStandard: true })
   }
+  else if (name === 'Decree') {
+    this.aDecree(player, arg)
+  }
   else if (name === 'Dogma') {
     const card = this.getCardByName(arg)
     this.aDogma(player, card)
@@ -522,6 +525,48 @@ Innovation.prototype.aClaimAchievement = function(player, opts={}) {
   return card
 }
 
+Innovation.prototype.aDecree = function(player, name) {
+  const card = this.getCardByName(name)
+  const hand = this.getZoneByPlayer(player, 'hand')
+
+  this.mLog({
+    template: '{player} declares a {card} decree',
+    args: { player, card }
+  })
+  this.mLogIndent()
+
+  this.aReturnMany(player, hand.cards)
+
+  let doImpl = false
+  if (card.zone === 'achievements') {
+    this.aClaimAchievement(player, { card })
+    doImpl = true
+  }
+  else if (card.zone === `players.${player.name}.achievements`) {
+    doImpl = true
+  }
+  else {
+    this.mMoveCardTo(card, this.getZoneByName('achievements'))
+    this.mLog({
+      template: '{player} returns {card} to the achievements',
+      args: { player, card }
+    })
+  }
+
+  if (doImpl) {
+    this.mLog({
+      template: '{card}: {text}',
+      args: {
+        card,
+        text: card.text
+      }
+    })
+    card.decreeImpl(this, player)
+  }
+
+  this.mLogOutdent()
+}
+
 Innovation.prototype.aDogma = function(player, card, opts={}) {
   this.mLog({
     template: '{player} activates the dogma effects of {card}',
@@ -662,6 +707,12 @@ Innovation.prototype.aReturn = function(player, card, opts={}) {
   }
 
   return this.mReturn(player, card, opts)
+}
+
+Innovation.prototype.aReturnMany = function(player, cards, opts={}) {
+  for (const card of [...cards]) {
+    this.aReturn(player, card, opts)
+  }
 }
 
 Innovation.prototype.aScore = function(player, card, opts={}) {

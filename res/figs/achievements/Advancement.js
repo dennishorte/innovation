@@ -7,19 +7,12 @@ function Card() {
   this.text = 'Draw a card of value two higher than your highest top card.'
   this.alt = ''
   this.isSpecialAchievement = true
-  this.decreeImpl = [{
-    dogma: 'Draw a card of value two higher than your highest top card.',
-    steps: [
-      {
-        description: 'Draw a card of value two higher than your highest top card.',
-        func(context, player) {
-          const { game } = context
-          const highest = game.getHighestTopCard(player)
-          return game.aDraw(context, player, highest + 2)
-        }
-      },
-    ]
-  }]
+  this.decreeImpl = (game, player) => {
+    const highestTop = game.getHighestTopCard(player)
+    const highestAge = highestTop ? highestTop.age : 0
+    const decreeAge = highestAge + 2
+    game.aDraw(player, { age: decreeAge })
+  }
 }
 
 Card.prototype = Object.create(CardBase.prototype)
