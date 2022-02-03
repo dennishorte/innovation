@@ -8,8 +8,7 @@ function Card() {
   this.alt = ''
   this.isSpecialAchievement = true
   this.decreeImpl = (game, player) => {
-    const highestTop = game.getHighestTopCard(player)
-    const highestAge = highestTop ? highestTop.age : 0
+    const highestAge = game.getHighestTopAge(player)
     const decreeAge = highestAge + 2
     game.aDraw(player, { age: decreeAge })
   }

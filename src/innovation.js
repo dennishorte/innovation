@@ -674,8 +674,8 @@ Innovation.prototype.aDraw = function(player, opts={}) {
   const baseExp = opts.exp || this._determineBaseDrawExpansion(player, share)
 
   // If age is not specified, draw based on player's current highest top card.
-  const highestTopCard = this.getHighestTopCard(player) || {}
-  const baseAge = age || highestTopCard.age || 1
+  const highestTopAge = this.getHighestTopAge(player)
+  const baseAge = age || highestTopAge || 1
 
   // Adjust age based on empty decks.
   const [ adjustedAge, adjustedExp ] = this._adjustedDrawDeck(baseAge, baseExp)
@@ -913,6 +913,11 @@ Innovation.prototype.getInfoByKarmaTrigger = function(player, trigger) {
 
 Innovation.prototype.getExpansionList = function() {
   return this.settings.expansions
+}
+
+Innovation.prototype.getHighestTopAge = function(player) {
+  const card = this.getHighestTopCard(player)
+  return card ? card.age : 0
 }
 
 Innovation.prototype.getHighestTopCard = function(player) {
@@ -1521,8 +1526,7 @@ Innovation.prototype._scoreCost = function(player, card) {
 Innovation.prototype._generateActionChoicesAchieve = function() {
   const player = this.getPlayerCurrent()
   const playerScore = this.getScore(player)
-  const topCard = this.getHighestTopCard(player)
-  const topCardAge = topCard ? topCard.age : 0
+  const topCardAge = this.getHighestTopAge(player)
   const eligible = this
     .getZoneById('achievements')
     .cards
