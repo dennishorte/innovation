@@ -132,8 +132,18 @@ describe('Innovation', () => {
   })
 
   describe('triggers', () => {
-    test.skip('unsplay colors with one or fewer cards', () => {
+    test('unsplay colors with one or fewer cards', () => {
+      const game = t.fixtureTopCard('Globalization')
+      game.testSetBreakpoint('before-first-player', (game) => {
+        t.setColor(game, 'dennis', 'yellow', ['Globalization', 'Stem Cells', 'Fermenting'])
+        t.setSplay(game, 'dennis', 'yellow', 'up')
+        t.setColor(game, 'micah', 'yellow', ['Agriculture', 'Statistics'])
+        t.setSplay(game, 'micah', 'yellow', 'left')
+      })
+      const request1 = game.run()
+      const request2 = t.choose(game, request1, 'Dogma.Globalization')
 
+      expect(t.zone(game, 'yellow', 'micah').splay).toBe('none')
     })
   })
 

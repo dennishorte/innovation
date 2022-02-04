@@ -32,8 +32,15 @@ Innovation.prototype._mainProgram = function() {
   this.mainLoop()
 }
 
-Innovation.prototype._gameOver = function() {
-  throw new Error('not implemented')
+Innovation.prototype._gameOver = function(event) {
+  this.mLog({
+    template: '{player} wins due to {reason}',
+    args: {
+      player: event.data.player,
+      reason: event.data.reason,
+    }
+  })
+  return event
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1189,6 +1196,8 @@ Innovation.prototype.mActed = function(player) {
     this.state.shared = true
   }
 
+  this.mSplayCheck()
+
   // Any time someone acts, there is the possibility that they should claim
   // a special achievement.
   this.mAchievementCheck()
@@ -1425,6 +1434,17 @@ Innovation.prototype.mSplay = function(player, color, direction) {
       args: { player, color, direction }
     })
     this.mActed(player)
+  }
+}
+
+Innovation.prototype.mSplayCheck = function() {
+  for (const player of this.getPlayerAll()) {
+    for (const color of this.utilColors()) {
+      const zone = this.getZoneByPlayer(player, color)
+      if (zone.cards.length < 2) {
+        zone.splay = 'none'
+      }
+    }
   }
 }
 
