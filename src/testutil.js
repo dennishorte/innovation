@@ -113,6 +113,15 @@ TestUtil.fixtureTopCard = function(cardName, options) {
   return game
 }
 
+TestUtil.testDecreeForTwo = function(figureName) {
+  const game = TestUtil.fixtureTopCard(figureName, { expansions: ['base', 'figs'] })
+  game.testSetBreakpoint('before-first-player', (game) => {
+    TestUtil.setHand(game, 'dennis', ['Homer', 'Ptahhotep'])
+  })
+  const request1 = game.run()
+  expect(TestUtil.getChoices(request1, 'Decree')).toStrictEqual(['Rivalry'])
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Data Shortcuts

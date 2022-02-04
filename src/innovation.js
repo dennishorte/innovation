@@ -951,7 +951,7 @@ Innovation.prototype.getBiscuitsByPlayer = function(player) {
 
   return this
     .getInfoByKarmaTrigger(player, 'calculate-biscuits')
-    .map(card => this.utilApplyKarma(card, 'calculate-biscuits', this, player, board))
+    .map(info => this.aCardEffect(player, info, { biscuits: boardBiscuits }))
     .reduce((l, r) => this.utilCombineBiscuits(l, r), boardBiscuits)
 }
 
