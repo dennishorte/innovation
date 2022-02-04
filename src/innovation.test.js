@@ -131,17 +131,23 @@ describe('Innovation', () => {
     })
   })
 
+  describe('karma', () => {
+    test.skip('multiple if/then karmas, only choose one', () => {
+
+    })
+  })
+
   describe('actions', () => {
     describe('first player gets only one action', () => {
-      test('two players', () => {
+      test.skip('two players', () => {
 
       })
 
-      test('three players', () => {
+      test.skip('three players', () => {
 
       })
 
-      test('four players', () => {
+      test.skip('four players', () => {
 
       })
     })
@@ -445,6 +451,32 @@ describe('Innovation', () => {
         }
         expect(trigger).toThrow(GameOverEvent)
       })
+    })
+  })
+
+  describe('inspire action', () => {
+    test('inspire with top card', () => {
+
+    })
+
+    test('inspire with splayed card', () => {
+
+    })
+
+    test('multiple inspire effects', () => {
+
+    })
+
+    test('draw based on top card of stack (test 1)', () => {
+
+    })
+
+    test('draw based on top card of stack (test 2)', () => {
+
+    })
+
+    test('inspire does not share', () => {
+
     })
   })
 

@@ -96,6 +96,11 @@ Util.assert = function(test, message) {
   }
 }
 
+Util.getAsArray = function(object, key) {
+  const value = object[key]
+  return Array.isArray(value) ? value : [value]
+}
+
 Util.inherit = function(parent, child) {
   child.prototype = Object.create(parent.prototype)
   Object.defineProperty(child.prototype, 'constructor', {

@@ -16,14 +16,23 @@ function CardBase() {
   this.karmaImpl
 }
 
-CardBase.prototype.checkEchoIsVisible = function(splay) {
-  const echoIndex = this.biscuits.indexOf('&')
+CardBase.prototype.checkBiscuitIsVisible = function(biscuit, splay) {
+  const biscuitIndex = this.biscuits.indexOf(biscuit)
   switch (splay) {
-    case 'left': return echoIndex === 3
-    case 'right': return echoIndex === 0 || echoIndex === 1
-    case 'up': return echoIndex === 1 || echoIndex === 2 || echoIndex === 3
+    case 'left': return biscuitIndex === 3
+    case 'right': return biscuitIndex === 0 || biscuitIndex === 1
+    case 'up': return biscuitIndex === 1 || biscuitIndex === 2 || biscuitIndex === 3
+    case 'top': return biscuitIndex !== -1
     default: return false
   }
+}
+
+CardBase.prototype.checkEchoIsVisible = function(splay) {
+  return this.checkBiscuitIsVisible('&', splay)
+}
+
+CardBase.prototype.checkInspireIsVisible = function(splay) {
+  return this.checkBiscuitIsVisible('*', splay)
 }
 
 CardBase.prototype.checkHasEcho = function() {

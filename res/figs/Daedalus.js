@@ -11,14 +11,28 @@ function Card() {
   this.inspire = ``
   this.echo = `Draw and foreshadow a {4}.`
   this.karma = [
-    `Each card in your forecast adds one to the value of your highest top card for the purpose of claiming achievements. Each achievement adds its value to your score.`
+    `Each card in your forecast adds one to the value of your highest top card for the purpose of claiming achievements.`,
+    `Each achievement adds its value to your score.`
   ]
   this.dogma = []
 
   this.dogmaImpl = []
   this.echoImpl = []
   this.inspireImpl = []
-  this.karmaImpl = []
+  this.karmaImpl = [
+    {
+      trigger: 'calculate-elibibility',
+      func(player, game) {
+        console.log('not implemented')
+      },
+    },
+    {
+      trigger: 'calculate-score',
+      func(player, game) {
+        console.log('not implemented')
+      }
+    }
+  ]
 }
 
 Card.prototype = Object.create(CardBase.prototype)

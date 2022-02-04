@@ -19,7 +19,18 @@ function Card() {
   this.dogmaImpl = []
   this.echoImpl = []
   this.inspireImpl = []
-  this.karmaImpl = []
+  this.karmaImpl = [
+    {
+      trigger: 'decree-for-two',
+      decree: 'Trade',
+    },
+    {
+      trigger: 'list-effects',
+      func(player, game) {
+        console.log('not implemented')
+      }
+    }
+  ]
 }
 
 Card.prototype = Object.create(CardBase.prototype)

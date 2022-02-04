@@ -18,7 +18,18 @@ function Card() {
   this.dogmaImpl = []
   this.echoImpl = []
   this.inspireImpl = []
-  this.karmaImpl = []
+  this.karmaImpl = [
+    {
+      trigger: 'score',
+      kind: 'would-instead',
+      matches(game, player, { card }) {
+        return false
+      },
+      func(game, player, { card }) {
+        console.log('not implemented')
+      }
+    }
+  ]
 }
 
 Card.prototype = Object.create(CardBase.prototype)

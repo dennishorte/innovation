@@ -19,7 +19,18 @@ function Card() {
   this.dogmaImpl = []
   this.echoImpl = []
   this.inspireImpl = []
-  this.karmaImpl = []
+  this.karmaImpl = [
+    {
+      kind: 'decree-for-two',
+      decree: 'Trade',
+    },
+    {
+      kind: 'calculate-biscuits',
+      func(game, player) {
+
+      }
+    }
+  ]
 }
 
 Card.prototype = Object.create(CardBase.prototype)

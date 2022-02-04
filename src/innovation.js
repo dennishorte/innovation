@@ -351,6 +351,9 @@ Innovation.prototype.action = function(count) {
   else if (name === 'Draw') {
     this.aDraw(player)
   }
+  else if (name === 'Inspire') {
+    this.aInspire(player, arg)
+  }
   else if (name === 'Meld') {
     const card = this.getCardByName(arg)
     this.aMeld(player, card)
@@ -388,6 +391,11 @@ Innovation.prototype.endTurn = function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Actions
 
+Innovation.prototype.aCardEffect = function(player, info, opts) {
+  const fn = typeof info.impl === 'function' ? info.impl : info.impl.func
+  return fn(this, player, opts)
+}
+
 Innovation.prototype.aCardEffects = function(
   leader,
   player,
@@ -397,9 +405,14 @@ Innovation.prototype.aCardEffects = function(
   sharing=[],
   demanding=[]
 ) {
-  for (let i = 0; i < card[kind].length; i++) {
-    const effectText = card[kind][i]
-    const effectImpl = card[`${kind}Impl`][i]
+  const texts = util
+    .getAsArray(card, kind)
+    .filter(text => text.length > 0)
+  const impls = util.getAsArray(card, `${kind}Impl`)
+
+  for (let i = 0; i < texts.length; i++) {
+    const effectText = texts[i]
+    const effectImpl = impls[i]
     const isDemand = effectText.startsWith('I demand')
 
     const demand = isDemand && demanding.includes(player)
@@ -413,7 +426,13 @@ Innovation.prototype.aCardEffects = function(
       })
       this.mLogIndent()
 
-      effectImpl(this, player, { biscuits })
+      this.aCardEffect(player, {
+        card,
+        text: effectText,
+        impl: effectImpl,
+        index: i,
+        biscuits,
+      })
 
       this.mLogOutdent()
     }
@@ -469,6 +488,8 @@ Innovation.prototype.aChooseAndScore = function(opts) {
 }
 
 Innovation.prototype.aChooseAndSplay = function(opts) {
+  util.assert(opts.direction, 'No direction specified for splay')
+
   const player = this.getPlayerByName(opts.actor)
 
   if (!opts.choices) {
@@ -557,7 +578,7 @@ Innovation.prototype.aDecree = function(player, name) {
   })
   this.mLogIndent()
 
-  this.aReturnMany(player, hand.cards)
+  this.aRemoveMany(player, hand.cards)
 
   let doImpl = false
   if (card.zone === 'achievements') {
@@ -711,8 +732,75 @@ Innovation.prototype.aDrawAndScore = function(player, age, opts={}) {
   }
 }
 
-Innovation.prototype.aKarma = function(player, kind, opts={}) {
+Innovation.prototype.aDrawAndTuck = function(player, age, opts={}) {
+  const card = this.aDraw(player, {...opts, age })
+  if (card) {
+    return this.aTuck(player, card, opts)
+  }
+}
 
+Innovation.prototype.aInspire = function(player, color, opts={}) {
+  this.mLog({
+    template: '{player} inspires {color}',
+    args: { player, color }
+  })
+  this.mLogIndent()
+
+  const zone = this.getZoneByPlayer(player, color)
+  const drawAge = zone.cards[0].age
+  const biscuits = this.getBiscuits()
+
+  // Gather effects
+  const effectCards = []
+  for (const card of [...zone.cards].reverse()) {
+    const splay = this.checkCardIsTop(card) ? 'top' : zone.splay
+    if (card.checkInspireIsVisible(splay)) {
+      effectCards.push(card)
+    }
+  }
+
+  // Execute effects
+  for (const card of effectCards) {
+    this.aCardEffects(
+      player,
+      player,
+      card,
+      'inspire',
+      biscuits
+    )
+  }
+
+  this.aDraw(player, { drawAge })
+
+  this.mLogOutdent()
+}
+
+Innovation.prototype.aKarma = function(player, kind, opts={}) {
+  const infos = this
+    .getInfoByKarmaTrigger(player, kind)
+    .filter(info => info.impl.matches && info.impl.matches(this, player, opts))
+
+  if (infos.length === 0) {
+    return
+  }
+  else if (infos.length > 1) {
+    throw new Error('Multiple Karmas not handled')
+  }
+
+  const info = infos[0]
+
+  this.mLog({
+    template: '{card} karma: {text}',
+    args: {
+      card: info.card,
+      text: info.text
+    }
+  })
+  this.mLogIndent()
+  this.aCardEffect(player, info, opts)
+  this.mLogOutdent()
+
+  return info.impl.kind
 }
 
 Innovation.prototype.aMeld = function(player, card, opts={}) {
@@ -722,6 +810,21 @@ Innovation.prototype.aMeld = function(player, card, opts={}) {
   }
 
   return this.mMeld(player, card, opts)
+}
+
+Innovation.prototype.aRemove = function(player, card, opts={}) {
+  const karmaKind = this.aKarma(player, 'remove', { ...opts, card })
+  if (karmaKind === 'would-instead') {
+    return
+  }
+
+  return this.mRemove(player, card, opts)
+}
+
+Innovation.prototype.aRemoveMany = function(player, cards, opts={}) {
+  for (const card of [...cards]) {
+    this.aRemove(player, card, opts)
+  }
 }
 
 Innovation.prototype.aReturn = function(player, card, opts={}) {
@@ -755,6 +858,8 @@ Innovation.prototype.aScoreMany = function(player, cards, opts={}) {
 }
 
 Innovation.prototype.aSplay = function(player, color, direction, opts={}) {
+  util.assert(direction, 'No direction specified for splay')
+
   const karmaKind = this.aKarma(player, 'transfer', { ...opts, color, direction })
   if (karmaKind === 'would-instead') {
     return
@@ -897,7 +1002,9 @@ Innovation.prototype.getInfoByKarmaTrigger = function(player, trigger) {
 
   for (const card of this.getTopCards(player)) {
     for (let i = 0; i < card.karma.length; i++) {
-      if (card.karmaImpl[i].trigger === trigger) {
+      const impl = card.karmaImpl[i]
+      const triggers = util.getAsArray(impl, 'trigger')
+      if (triggers.includes(trigger)) {
         matches.push({
           card,
           index: i,
@@ -1241,6 +1348,16 @@ Innovation.prototype.mLogOutdent = function() {
   this.state.log.push('__OUTDENT__')
 }
 
+Innovation.prototype.mRemove = function(player, card) {
+  this.mMoveCardTo(card, this.getZoneById('exile'))
+  this.mLog({
+    template: '{player} exiles {card}',
+    args: { player, card }
+  })
+  this.mActed(player)
+  return card
+}
+
 Innovation.prototype.mResetDogmaInfo = function() {
   this.state.dogmaInfo = {}
 }
@@ -1261,14 +1378,14 @@ Innovation.prototype.mReturn = function(player, card, opts) {
 
   util.assert(sourceIndex !== -1, 'Did not find card in its supposed source.')
 
-  this.mMoveByIndices(source, sourceIndex, target, targetIndex)
-
   if (!opts.silent) {
     this.mLog({
       template: '{player} returns {card}',
       args: { player, card }
     })
   }
+
+  this.mMoveByIndices(source, sourceIndex, target, targetIndex)
 
   this.mActed(player)
   return card
@@ -1297,6 +1414,8 @@ Innovation.prototype.mScore = function(player, card) {
 }
 
 Innovation.prototype.mSplay = function(player, color, direction) {
+  util.assert(direction, 'No direction specified for splay')
+
   const target = this.getZoneByPlayer(player, color)
   if (target.splay !== direction) {
     target.splay = direction
@@ -1509,7 +1628,7 @@ Innovation.prototype._generateActionChoices = function() {
   choices.push(this._generateActionChoicesDogma())
   choices.push(this._generateActionChoicesDraw())
   //choices.push(this._generateActionChoicesEndorse())
-  //choices.push(this._generateActionChoicesInspire())
+  choices.push(this._generateActionChoicesInspire())
   choices.push(this._generateActionChoicesMeld())
   return choices
 }
@@ -1597,6 +1716,27 @@ Innovation.prototype._generateActionChoicesDraw = function() {
   return {
     name: 'Draw',
     choices: ['draw a card']
+  }
+}
+
+Innovation.prototype._generateActionChoicesInspire = function() {
+  const player = this.getPlayerCurrent()
+  const inspireColors = []
+
+  for (const color of this.utilColors()) {
+    const zone = this.getZoneByPlayer(player, color)
+    for (const card of zone.cards) {
+      const splay = this.checkCardIsTop(card) ? 'top' : zone.splay
+      if (card.checkInspireIsVisible(splay)) {
+        inspireColors.push(color)
+        break
+      }
+    }
+  }
+
+  return {
+    name: 'Inspire',
+    choices: inspireColors,
   }
 }
 
