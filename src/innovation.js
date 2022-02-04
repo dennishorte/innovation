@@ -431,6 +431,7 @@ Innovation.prototype.aCardEffects = function(
         text: effectText,
         impl: effectImpl,
         index: i,
+      }, {
         biscuits,
       })
 
