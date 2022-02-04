@@ -771,7 +771,7 @@ Innovation.prototype.aInspire = function(player, color, opts={}) {
     )
   }
 
-  this.aDraw(player, { drawAge })
+  this.aDraw(player, { age: drawAge })
 
   this.mLogOutdent()
 }

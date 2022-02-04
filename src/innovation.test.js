@@ -456,10 +456,33 @@ describe('Innovation', () => {
 
   describe('inspire action', () => {
     test('inspire with top card', () => {
+      const game = t.fixtureTopCard('Homer', { expansions: ['base', 'figs'] })
+      game.testSetBreakpoint('before-first-player', (game) => {
+        t.setDeckTop(game, 'base', 2, ['Mathematics'])
+        t.setDeckTop(game, 'base', 1, ['Domestication'])
+        t.setHand(game, 'dennis', [])
+      })
+      const request1 = game.run()
+      const request2 = t.choose(game, request1, 'Inspire.purple')
 
+      expect(t.cards(game, 'blue')).toStrictEqual(['Mathematics'])
+      expect(t.cards(game, 'hand')).toStrictEqual(['Domestication'])
     })
 
     test('inspire with splayed card', () => {
+      const game = t.fixtureFirstPlayer({ expansions: ['base', 'figs'] })
+      game.testSetBreakpoint('before-first-player', (game) => {
+        t.setColor(game, 'dennis', 'purple', ['Enterprise', 'Homer'])
+        t.setSplay(game, 'dennis', 'purple', 'up')
+        t.setDeckTop(game, 'base', 2, ['Mathematics'])
+        t.setDeckTop(game, 'base', 4, ['Navigation'])
+        t.setHand(game, 'dennis', [])
+      })
+      const request1 = game.run()
+      const request2 = t.choose(game, request1, 'Inspire.purple')
+
+      expect(t.cards(game, 'blue')).toStrictEqual(['Mathematics'])
+      expect(t.cards(game, 'hand')).toStrictEqual(['Navigation'])
 
     })
 
