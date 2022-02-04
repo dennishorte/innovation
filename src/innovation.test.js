@@ -131,6 +131,12 @@ describe('Innovation', () => {
     })
   })
 
+  describe('triggers', () => {
+    test.skip('unsplay colors with one or fewer cards', () => {
+
+    })
+  })
+
   describe('karma', () => {
     test.skip('multiple if/then karmas, only choose one', () => {
 
@@ -491,15 +497,14 @@ describe('Innovation', () => {
     })
 
     test('draw based on top card of stack (test 1)', () => {
-
+      // See test 'inspire with top card'
     })
 
     test('draw based on top card of stack (test 2)', () => {
-
+      // See test 'inspire with splayed card'
     })
 
-    test('inspire does not share', () => {
-
+    test.skip('inspire does not share', () => {
     })
   })
 
