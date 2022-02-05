@@ -39,16 +39,8 @@ function Card() {
         .getZoneByPlayer(player, 'hand')
         .cards
         .map(c => c.id)
-      game.aChooseAndMeld({
-        actor: player.name,
-        title: 'Choose a Card',
-        choices: hand()
-      })
-      game.aChooseAndScore({
-        actor: player.name,
-        title: 'Choose a Card',
-        choices: hand()
-      })
+      game.aChooseAndMeld(player, hand())
+      game.aChooseAndScore(player, hand())
     },
   ]
   this.echoImpl = []

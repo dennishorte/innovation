@@ -32,13 +32,7 @@ function Card() {
         .cards
         .map(c => c.name)
 
-      game.aChooseAndScore({
-        actor: player.name,
-        title: 'Choose a Card',
-        choices,
-        min: 0,
-        max: 1,
-      })
+      game.aChooseAndScore(player, choices, { min: 0, max: 1 })
     }
   ]
   this.echoImpl = []

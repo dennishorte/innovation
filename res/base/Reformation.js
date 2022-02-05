@@ -37,12 +37,7 @@ function Card() {
         .getZoneByPlayer(player, 'hand')
         .cards
         .map(c => c.id)
-      game.aChooseAndTuck({
-        actor: player.name,
-        title: `Choose ${count} Cards`,
-        choices,
-        count,
-      })
+      game.aChooseAndTuck(player, choices, { count })
     },
     (game, player) => {
       game.aChooseAndSplay({

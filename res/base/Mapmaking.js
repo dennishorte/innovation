@@ -23,15 +23,10 @@ function Card() {
         .cards
         .filter(card => card.age === 1)
         .map(card => card.id)
+      const target = game.getZoneByPlayer(leader, 'score')
+      const transferredCards = game.aChooseAndTransfer(player, choices, target)
 
-      const transferredCard = game.aChooseAndTransfer({
-        actor: player.name,
-        title: 'Choose a Card',
-        choices,
-        target: game.getZoneByPlayer(leader, 'score'),
-      })
-
-      if (transferredCard) {
+      if (transferredCards) {
         game.state.dogmaInfo.transferred = true
       }
     },

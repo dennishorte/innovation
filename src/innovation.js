@@ -490,9 +490,13 @@ Innovation.prototype.aChoosePlayer = function(opts) {
   }
 }
 
-Innovation.prototype.aChooseAndMeld = function(opts) {
-  const player = this.getPlayerByName(opts.actor)
-  const cardNames = this.requestInputSingle(opts)
+Innovation.prototype.aChooseAndMeld = function(player, cards, opts={}) {
+  const cardNames = this.requestInputSingle({
+    actor: player.name,
+    title: 'Choose a Card',
+    choices: cards.map(c => c.id || c),
+    ...opts
+  })
   if (cardNames.length === 0) {
     this.mLogDoNothing(player)
   }
@@ -503,7 +507,7 @@ Innovation.prototype.aChooseAndMeld = function(opts) {
   }
 }
 
-Innovation.prototype.aChooseAndReturn = function(player, cards, opts) {
+Innovation.prototype.aChooseAndReturn = function(player, cards, opts={}) {
   const cardNames = this.requestInputSingle({
     actor: player.name,
     title: 'Choose a Card',
@@ -524,9 +528,13 @@ Innovation.prototype.aChooseAndReturn = function(player, cards, opts) {
   }
 }
 
-Innovation.prototype.aChooseAndScore = function(opts) {
-  const player = this.getPlayerByName(opts.actor)
-  const cardNames = this.requestInputSingle(opts)
+Innovation.prototype.aChooseAndScore = function(player, cards, opts={}) {
+  const cardNames = this.requestInputSingle({
+    actor: player.name,
+    title: 'Choose a Card',
+    choices: cards.map(c => c.id || c),
+    ...opts
+  })
   if (cardNames.length === 0) {
     this.mLogDoNothing(player)
   }
@@ -570,9 +578,13 @@ Innovation.prototype.aChooseAndSplay = function(opts) {
   }
 }
 
-Innovation.prototype.aChooseAndTransfer = function(opts) {
-  const player = this.getPlayerByName(opts.actor)
-  const cardNames = this.requestInputSingle(opts)
+Innovation.prototype.aChooseAndTransfer = function(player, cards, target, opts={}) {
+  const cardNames = this.requestInputSingle({
+    actor: player.name,
+    title: 'Choose a Card',
+    choices: cards.map(c => c.id || c),
+    ...opts
+  })
   if (cardNames.length === 0) {
     this.mLog({
       template: '{player} does nothing',
@@ -584,15 +596,19 @@ Innovation.prototype.aChooseAndTransfer = function(opts) {
       .map(c => this.getCardByName(c))
 
     toTransfer
-      .forEach(card => this.aTransfer(player, card, opts.target))
+      .forEach(card => this.aTransfer(player, card, target))
 
     return toTransfer
   }
 }
 
-Innovation.prototype.aChooseAndTuck = function(opts) {
-  const player = this.getPlayerByName(opts.actor)
-  const cardNames = this.requestInputSingle(opts)
+Innovation.prototype.aChooseAndTuck = function(player, cards, opts={}) {
+  const cardNames = this.requestInputSingle({
+    actor: player.name,
+    title: 'Choose a Card',
+    choices: cards.map(c => c.id || c),
+    ...opts
+  })
   if (cardNames.length === 0) {
     this.mLog({
       template: '{player} does nothing',
@@ -834,11 +850,7 @@ Innovation.prototype.aEndorse = function(player, color, opts={}) {
     .filter(card => cities.some(city => card.age <= city.age))
     .map(card => card.id)
 
-  this.aChooseAndTuck({
-    actor: player.name,
-    title: 'Choose a Card',
-    choices: tuckChoices,
-  })
+  this.aChooseAndTuck(player, tuckChoices)
 
   const card = this.getTopCard(player, color)
   this.aDogmaHelper(player, card, { ...opts, endorsed: true })
