@@ -13,11 +13,7 @@ function Card() {
       .getPlayerAll()
       .filter(p => p.name !== player.name)
       .map(p => p.name)
-    const other = game.aChoosePlayer({
-      actor: player.name,
-      title: 'Choose a Player',
-      choices: otherPlayers
-    })
+    const other = game.aChoosePlayer(player, otherPlayers)
 
     // Choose three cards
     const scoreCards = game

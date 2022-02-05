@@ -477,14 +477,18 @@ Innovation.prototype.aChooseCard = function(player, cards, opts) {
   }
 }
 
-Innovation.prototype.aChoosePlayer = function(opts) {
-  if (opts.choices.length === 0) {
+Innovation.prototype.aChoosePlayer = function(player, choices, opts) {
+  if (choices.length === 0) {
     this.mLogNoEffect()
     return undefined
   }
 
-  const player = this.getPlayerByName(opts.actor)
-  const playerNames = this.requestInputSingle(opts)
+  const playerNames = this.requestInputSingle({
+    actor: player.name,
+    title: 'Choose a Player',
+    choices,
+    ...opts,
+  })
   if (playerNames.length === 0) {
     this.mLogDoNothing(player)
     return undefined
