@@ -503,6 +503,27 @@ Innovation.prototype.aChooseAndMeld = function(opts) {
   }
 }
 
+Innovation.prototype.aChooseAndReturn = function(player, cards, opts) {
+  const cardNames = this.requestInputSingle({
+    actor: player.name,
+    title: 'Choose a Card',
+    choices: cards.map(c => c.id || c),
+    ...opts
+  })
+  if (cardNames.length === 0) {
+    this.mLogDoNothing(player)
+  }
+  else {
+    const cards = cardNames
+      .map(c => this.getCardByName(c))
+
+    cards
+      .forEach(card => this.aReturn(player, card))
+
+    return cards
+  }
+}
+
 Innovation.prototype.aChooseAndScore = function(opts) {
   const player = this.getPlayerByName(opts.actor)
   const cardNames = this.requestInputSingle(opts)
