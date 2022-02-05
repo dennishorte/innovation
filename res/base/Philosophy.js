@@ -18,13 +18,7 @@ function Card() {
 
   this.dogmaImpl = [
     (game, player) => {
-      game.aChooseAndSplay({
-        actor: player.name,
-        title: 'Choose a Color',
-        min: 0,
-        max: 1,
-        direction: 'left'
-      })
+      game.aChooseAndSplay(player, null, 'left')
     },
     (game, player) => {
       const choices = game

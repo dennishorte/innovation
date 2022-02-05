@@ -40,14 +40,7 @@ function Card() {
       game.aChooseAndTuck(player, choices, { count })
     },
     (game, player) => {
-      game.aChooseAndSplay({
-        actor: player.name,
-        title: 'Choose a Color',
-        choices: ['yellow', 'purple'],
-        min: 0,
-        max: 1,
-        direction: 'right'
-      })
+      game.aChooseAndSplay(player, ['yellow', 'purple'], 'right')
     }
   ]
   this.echoImpl = []

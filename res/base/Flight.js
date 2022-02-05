@@ -20,20 +20,7 @@ function Card() {
     (game, player) => {
       const redSplay = game.getZoneByPlayer(player, 'red').splay
       if (redSplay === 'up') {
-        const otherColors = game
-          .utilColors()
-          .map(color => game.getZoneByPlayer(player, color))
-          .filter(zone => zone.splay !== 'up')
-          .map(zone => zone.color)
-
-        game.aChooseAndSplay({
-          actor: player.name,
-          title: 'Choose a Color',
-          choices: otherColors,
-          min: 0,
-          max: 1,
-          direction: 'up'
-        })
+        game.aChooseAndSplay(player, null, 'up')
       }
       else {
         game.mLog({ template: 'no effect' })
@@ -45,14 +32,7 @@ function Card() {
         game.mLog({ template: 'no effect' })
       }
       else {
-        game.aChooseAndSplay({
-          actor: player.name,
-          title: 'Choose a Color',
-          choices: ['red'],
-          min: 0,
-          max: 1,
-          direction: 'up'
-        })
+        game.aChooseAndSplay(player, ['red'], 'up')
       }
     }
   ]

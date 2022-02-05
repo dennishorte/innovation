@@ -8,13 +8,7 @@ function Card() {
   this.alt = ''
   this.isSpecialAchievement = true
   this.decreeImpl = (game, player) => {
-    game.aChooseAndSplay({
-      actor: player.name,
-      title: 'Choose a Color',
-      choices: game.utilColors(),
-      direction: 'up',
-      count: 1,
-    })
+    game.aChooseAndSplay(player, null, 'up', { count: 1 })
   }
 }
 

@@ -545,21 +545,18 @@ Innovation.prototype.aChooseAndScore = function(player, cards, opts={}) {
   }
 }
 
-Innovation.prototype.aChooseAndSplay = function(opts) {
-  util.assert(opts.direction, 'No direction specified for splay')
+Innovation.prototype.aChooseAndSplay = function(player, choices, direction, opts={}) {
+  util.assert(direction, 'No direction specified for splay')
 
-  const player = this.getPlayerByName(opts.actor)
-
-  if (!opts.choices) {
-    opts.choices = this.utilColors()
+  if (!choices) {
+    choices = this.utilColors()
   }
 
-  opts.choices = opts
-    .choices
+  choices = choices
     .filter(color => this.getZoneByPlayer(player, color).splay !== opts.direction)
     .filter(color => this.getZoneByPlayer(player, color).cards.length > 1)
 
-  if (opts.choices.length === 0) {
+  if (choices.length === 0) {
     this.mLogNoEffect()
     return
   }
@@ -569,12 +566,18 @@ Innovation.prototype.aChooseAndSplay = function(opts) {
     opts.max = 1
   }
 
-  const colors = this.requestInputSingle(opts)
+  const colors = this.requestInputSingle({
+    actor: player.name,
+    title: 'Choose a Color',
+    choices,
+    direction,
+    ...opts
+  })
   if (colors.length === 0) {
     this.mLogDoNothing(player)
   }
   else {
-    this.aSplay(player, colors[0], opts.direction)
+    this.aSplay(player, colors[0], direction)
   }
 }
 

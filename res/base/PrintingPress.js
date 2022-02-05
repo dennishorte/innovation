@@ -41,14 +41,7 @@ function Card() {
       }
     },
     (game, player) => {
-      game.aChooseAndSplay({
-        actor: player.name,
-        title: 'Choose a Color',
-        choices: ['blue'],
-        min: 0,
-        max: 1,
-        direction: 'right'
-      })
+      game.aChooseAndSplay(player, ['blue'], 'right')
     }
   ]
   this.echoImpl = []

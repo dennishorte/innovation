@@ -17,30 +17,6 @@ function Card() {
   ]
 
   this.dogmaImpl = [
-    {
-      dogma: `You may rearrange the order of one color of cards on your board.`,
-      steps: [
-        {
-
-        }
-      ]
-    },
-    {
-      dogma: `You may splay your yellow or blue cards up.`,
-      steps: [
-        {
-          description: `You may splay your yellow or blue cards up.`,
-          func(context, player) {
-            const { game } = context
-            return game.aChooseAndSplay(context, {
-              playerName: player.name,
-              direction: 'up',
-              choices: ['blue', 'yellow']
-            })
-          }
-        }
-      ]
-    },
   ]
   this.echoImpl = []
   this.inspireImpl = []
