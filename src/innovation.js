@@ -490,6 +490,19 @@ Innovation.prototype.aChoosePlayer = function(opts) {
   }
 }
 
+Innovation.prototype.aChooseAndMeld = function(opts) {
+  const player = this.getPlayerByName(opts.actor)
+  const cardNames = this.requestInputSingle(opts)
+  if (cardNames.length === 0) {
+    this.mLogDoNothing(player)
+  }
+  else {
+    cardNames
+      .map(c => this.getCardByName(c))
+      .forEach(card => this.aMeld(player, card))
+  }
+}
+
 Innovation.prototype.aChooseAndScore = function(opts) {
   const player = this.getPlayerByName(opts.actor)
   const cardNames = this.requestInputSingle(opts)
