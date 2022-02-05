@@ -113,6 +113,7 @@ Game.prototype.requestInputMany = function(array) {
       const answer = this._tryToAutomaticallyRespond(unanswered)
       if (answer) {
         this._validateResponse(array, answer)
+        this.responses.push(answer)
         responses.push(answer)
       }
       else {
