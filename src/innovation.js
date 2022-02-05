@@ -440,6 +440,10 @@ Innovation.prototype.aCardEffects = function(
         })
         this.mLogIndent()
 
+        if (demand) {
+          this.state.dogmaInfo.demanding = true
+        }
+
         this.aCardEffect(player, {
           card,
           text: effectText,
@@ -450,6 +454,7 @@ Innovation.prototype.aCardEffects = function(
           leader,
         })
 
+        this.state.dogmaInfo.demanding = false
         this.mLogOutdent()
       }
     }
@@ -1314,7 +1319,7 @@ Innovation.prototype.mActed = function(player) {
     return
   }
 
-  if (!this.checkSameTeam(player, this.getPlayerCurrent())) {
+  if (!this.state.dogmaInfo.demanding && !this.checkSameTeam(player, this.getPlayerCurrent())) {
     this.state.shared = true
   }
 
