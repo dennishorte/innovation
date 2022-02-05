@@ -16,7 +16,35 @@ function Card() {
     `If any card was transferred due to the demand, draw and score a {1}.`
   ]
 
-  this.dogmaImpl = []
+  this.dogmaImpl = [
+    (game, player, { leader }) => {
+      const choices = game
+        .getZoneByPlayer(player, 'score')
+        .cards
+        .filter(card => card.age === 1)
+        .map(card => card.id)
+
+      const transferredCard = game.aChooseAndTransfer({
+        actor: player.name,
+        title: 'Choose a Card',
+        choices,
+        target: game.getZoneByPlayer(leader, 'score'),
+      })
+
+      if (transferredCard) {
+        game.state.dogmaInfo.transferred = true
+      }
+    },
+
+    (game, player) => {
+      if (game.state.dogmaInfo.transferred) {
+        game.aDrawAndScore(player, 1)
+      }
+      else {
+        game.mLogNoEffect()
+      }
+    },
+  ]
   this.echoImpl = []
   this.inspireImpl = []
   this.karmaImpl = []

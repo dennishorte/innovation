@@ -447,6 +447,7 @@ Innovation.prototype.aCardEffects = function(
           index: i,
         }, {
           biscuits,
+          leader,
         })
 
         this.mLogOutdent()
@@ -532,6 +533,26 @@ Innovation.prototype.aChooseAndSplay = function(opts) {
   }
   else {
     this.aSplay(player, colors[0], opts.direction)
+  }
+}
+
+Innovation.prototype.aChooseAndTransfer = function(opts) {
+  const player = this.getPlayerByName(opts.actor)
+  const cardNames = this.requestInputSingle(opts)
+  if (cardNames.length === 0) {
+    this.mLog({
+      template: '{player} does nothing',
+      args: { player }
+    })
+  }
+  else {
+    const toTransfer = cardNames
+      .map(c => this.getCardByName(c))
+
+    toTransfer
+      .forEach(card => this.aTransfer(player, card, opts.target))
+
+    return toTransfer
   }
 }
 
