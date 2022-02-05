@@ -358,6 +358,9 @@ Innovation.prototype.action = function(count) {
   else if (name === 'Draw') {
     this.aDraw(player)
   }
+  else if (name === 'Endorse') {
+    this.aEndorse(player, arg)
+  }
   else if (name === 'Inspire') {
     this.aInspire(player, arg)
   }
@@ -410,41 +413,45 @@ Innovation.prototype.aCardEffects = function(
   kind,
   biscuits,
   sharing=[],
-  demanding=[]
+  demanding=[],
+  endorsed=false
 ) {
   const texts = util
     .getAsArray(card, kind)
     .filter(text => text.length > 0)
   const impls = util.getAsArray(card, `${kind}Impl`)
 
+  const repeatCount = endorsed ? 2 : 1
+
   for (let i = 0; i < texts.length; i++) {
-    const effectText = texts[i]
-    const effectImpl = impls[i]
-    const isDemand = effectText.startsWith('I demand')
+    for (let z = 0; z < repeatCount; z++) {
+      const effectText = texts[i]
+      const effectImpl = impls[i]
+      const isDemand = effectText.startsWith('I demand')
 
-    const demand = isDemand && demanding.includes(player)
-    const share = !isDemand && sharing.includes(player)
-    const owner = !isDemand && player === leader
+      const demand = isDemand && demanding.includes(player)
+      const share = !isDemand && sharing.includes(player) && z === 0
+      const owner = !isDemand && player === leader
 
-    if (demand || share || owner) {
-      this.mLog({
-        template: `{player}, {card}: ${effectText}`,
-        args: { player, card }
-      })
-      this.mLogIndent()
+      if (demand || share || owner) {
+        this.mLog({
+          template: `{player}, {card}: ${effectText}`,
+          args: { player, card }
+        })
+        this.mLogIndent()
 
-      this.aCardEffect(player, {
-        card,
-        text: effectText,
-        impl: effectImpl,
-        index: i,
-      }, {
-        biscuits,
-      })
+        this.aCardEffect(player, {
+          card,
+          text: effectText,
+          impl: effectImpl,
+          index: i,
+        }, {
+          biscuits,
+        })
 
-      this.mLogOutdent()
+        this.mLogOutdent()
+      }
     }
-
   }
 }
 
@@ -620,13 +627,7 @@ Innovation.prototype.aDecree = function(player, name) {
   this.mLogOutdent()
 }
 
-Innovation.prototype.aDogma = function(player, card, opts={}) {
-  this.mLog({
-    template: '{player} activates the dogma effects of {card}',
-    args: { player, card }
-  })
-  this.mLogIndent()
-
+Innovation.prototype.aDogmaHelper = function(player, card, opts) {
   this.state.shared = false
 
   const color = this.getZoneByPlayer(player, card.color)
@@ -664,15 +665,16 @@ Innovation.prototype.aDogma = function(player, card, opts={}) {
     effectCards.push(card)
   }
 
+  const endorsed = opts.endorsed
   const leader = this.getPlayerCurrent()
   for (const ecard of effectCards) {
     for (const player of this.getPlayersStartingNext()) {
-      this.aCardEffects(leader, player, ecard, 'echo', biscuits, sharing, demanding)
+      this.aCardEffects(leader, player, ecard, 'echo', biscuits, sharing, demanding, endorsed)
 
       // Only the top card (or the artifact card for free artifact dogma actions)
       // get to do their dogma effects.
       if (ecard === card) {
-        this.aCardEffects(leader, player, ecard, 'dogma', biscuits, sharing, demanding)
+        this.aCardEffects(leader, player, ecard, 'dogma', biscuits, sharing, demanding, endorsed)
       }
     }
   }
@@ -687,7 +689,15 @@ Innovation.prototype.aDogma = function(player, card, opts={}) {
     this.aDraw(player, { exp: 'figs', share: true })
     this.mLogOutdent()
   }
+}
 
+Innovation.prototype.aDogma = function(player, card, opts={}) {
+  this.mLog({
+    template: '{player} activates the dogma effects of {card}',
+    args: { player, card }
+  })
+  this.mLogIndent()
+  this.aDogmaHelper(player, card, opts)
   this.mLogOutdent()
 }
 
@@ -745,6 +755,40 @@ Innovation.prototype.aDrawAndTuck = function(player, age, opts={}) {
   if (card) {
     return this.aTuck(player, card, opts)
   }
+}
+
+Innovation.prototype.aEndorse = function(player, color, opts={}) {
+  this.mLog({
+    template: '{player} endorses {color}',
+    args: { player, color }
+  })
+  this.mLogIndent()
+
+  // Tuck a card
+  const featuredBiscuit = this
+    .getZoneByPlayer(player, color)
+    .cards[0]
+    .dogmaBiscuit
+  const cities = this
+    .getTopCards(player)
+    .filter(card => card.expansion === 'city')
+    .filter(card => card.biscuits.includes(featuredBiscuit))
+  const tuckChoices = this
+    .getZoneByPlayer(player, 'hand')
+    .cards
+    .filter(card => cities.some(city => card.age <= city.age))
+    .map(card => card.id)
+
+  this.aChooseAndTuck({
+    actor: player.name,
+    title: 'Choose a Card',
+    choices: tuckChoices,
+  })
+
+  const card = this.getTopCard(player, color)
+  this.aDogmaHelper(player, card, { ...opts, endorsed: true })
+
+  this.mLogOutdent()
 }
 
 Innovation.prototype.aInspire = function(player, color, opts={}) {
@@ -1648,7 +1692,7 @@ Innovation.prototype._generateActionChoices = function() {
   choices.push(this._generateActionChoicesDecree())
   choices.push(this._generateActionChoicesDogma())
   choices.push(this._generateActionChoicesDraw())
-  //choices.push(this._generateActionChoicesEndorse())
+  choices.push(this._generateActionChoicesEndorse())
   choices.push(this._generateActionChoicesInspire())
   choices.push(this._generateActionChoicesMeld())
   return choices
@@ -1737,6 +1781,42 @@ Innovation.prototype._generateActionChoicesDraw = function() {
   return {
     name: 'Draw',
     choices: ['draw a card']
+  }
+}
+
+Innovation.prototype._generateActionChoicesEndorse = function() {
+  const player = this.getPlayerCurrent()
+  const endorseColors = []
+
+  const lowestHandAge = this
+    .getZoneByPlayer(player, 'hand')
+    .cards
+    .map(card => card.age)
+    .sort((l, r) => l - r)[0] || 99
+
+  const cities = this
+    .getTopCards(player)
+    .filter(card => card.expansion === 'city')
+    .filter(city => city.age >= lowestHandAge)
+
+  const stacksWithEndorsableEffects = this
+    .utilColors()
+    .map(color => this.getZoneByPlayer(player, color))
+    .filter(zone => this.checkZoneHasVisibileDogmaOrEcho(zone))
+
+  const colors = []
+
+  for (const zone of stacksWithEndorsableEffects) {
+    const dogmaBiscuit = zone.cards[0].dogmaBiscuit
+    const canEndorse = cities.some(city => city.biscuits.includes(dogmaBiscuit))
+    if (canEndorse) {
+      colors.push(zone.color)
+    }
+  }
+
+  return {
+    name: 'Endorse',
+    choices: colors
   }
 }
 

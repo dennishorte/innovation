@@ -15,7 +15,12 @@ function Card() {
     `Draw two {1}.`
   ]
 
-  this.dogmaImpl = []
+  this.dogmaImpl = [
+    (game, player) => {
+      game.aDraw(player, { age: 1 })
+      game.aDraw(player, { age: 1 })
+    }
+  ]
   this.echoImpl = []
   this.inspireImpl = []
   this.karmaImpl = []

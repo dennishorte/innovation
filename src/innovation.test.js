@@ -147,6 +147,40 @@ describe('Innovation', () => {
     })
   })
 
+  describe('cities', () => {
+    test.skip('plus icon', () => {
+
+    })
+
+    test.skip('flag but not most', () => {
+
+    })
+
+    test.skip('flag and most', () => {
+
+    })
+
+    test.skip('fountain', () => {
+
+    })
+
+    test.skip('splay left', () => {
+
+    })
+
+    test.skip('splay right', () => {
+
+    })
+
+    test.skip('splay up', () => {
+
+    })
+
+    test.skip('draw for biscuit', () => {
+
+    })
+  })
+
   describe('karma', () => {
     test.skip('multiple if/then karmas, only choose one', () => {
 
@@ -467,6 +501,55 @@ describe('Innovation', () => {
         }
         expect(trigger).toThrow(GameOverEvent)
       })
+    })
+  })
+
+  describe('endorse action', () => {
+    test('need a card of equal or lower age to tuck', () => {
+      const game = t.fixtureFirstPlayer({ expansions: ['base', 'city'] })
+      game.testSetBreakpoint('before-first-player', (game) => {
+        t.setColor(game, 'dennis', 'green', ['The Wheel'])
+        t.setColor(game, 'dennis', 'red', ['Tikal'])
+        t.setHand(game, 'dennis', ['Cordoba'])
+      })
+      const result1 = game.run()
+      expect(t.getChoices(result1, 'Endorse')).toStrictEqual([])
+    })
+
+    test('can choose which card to tuck', () => {
+      const game = t.fixtureFirstPlayer({ expansions: ['base', 'city'] })
+      game.testSetBreakpoint('before-first-player', (game) => {
+        t.setColor(game, 'dennis', 'green', ['The Wheel'])
+        t.setColor(game, 'dennis', 'red', ['Tikal'])
+        t.setHand(game, 'dennis', ['Mathematics', 'Tools', 'Cordoba'])
+      })
+      const result1 = game.run()
+      const result2 = t.choose(game, result1, 'Endorse.green')
+
+      expect(result2.selectors[0].choices).toStrictEqual(['Mathematics', 'Tools'])
+    })
+
+    test('shares happen once', () => {
+
+    })
+
+    test('demands go around the table twice', () => {
+
+    })
+
+    test('player does non-demands twice', () => {
+
+    })
+
+    test('city biscuits must match featured biscuit', () => {
+      const game = t.fixtureFirstPlayer({ expansions: ['base', 'city'] })
+      game.testSetBreakpoint('before-first-player', (game) => {
+        t.setColor(game, 'dennis', 'green', ['The Wheel'])
+        t.setColor(game, 'dennis', 'blue', ['Cordoba'])
+        t.setHand(game, 'dennis', ['Mathematics', 'Tools'])
+      })
+      const result1 = game.run()
+      expect(t.getChoices(result1, 'Endorse')).toStrictEqual([])
     })
   })
 
