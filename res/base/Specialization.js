@@ -19,11 +19,7 @@ function Card() {
   this.dogmaImpl = [
     (game, player) => {
       const hand = game.getZoneByPlayer(player, 'hand')
-      const card = game.aChooseCard({
-        actor: player.name,
-        title: 'Reveal a Card',
-        choices: hand.cards.map(c => c.name),
-      })
+      const card = game.aChooseCard(player, hand.cards)
 
       if (card) {
         const stolen = game

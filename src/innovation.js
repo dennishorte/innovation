@@ -456,14 +456,18 @@ Innovation.prototype.aCardEffects = function(
   }
 }
 
-Innovation.prototype.aChooseCard = function(opts) {
-  if (opts.choices.length === 0) {
+Innovation.prototype.aChooseCard = function(player, cards, opts) {
+  if (cards.length === 0) {
     this.mLogNoEffect()
     return undefined
   }
 
-  const player = this.getPlayerByName(opts.actor)
-  const cardNames = this.requestInputSingle(opts)
+  const cardNames = this.requestInputSingle({
+    actor: player.name,
+    title: 'Choose a Card',
+    choices: cards.map(c => c.id || c),
+    ...opts
+  })
   if (cardNames.length === 0) {
     this.mLogDoNothing(player)
     return undefined

@@ -22,13 +22,7 @@ function Card() {
         .getZoneByPlayer(player, 'score')
         .cards
         .map(c => c.id)
-      const card = game.aChooseCard({
-        actor: player.name,
-        title: 'Choose a Card',
-        choices,
-        min: 0,
-        max: 1
-      })
+      const card = game.aChooseCard(player, choices, { min: 0, max: 1 })
 
       if (card) {
         game.aReturn(player, card)

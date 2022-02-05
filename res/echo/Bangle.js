@@ -28,11 +28,7 @@ function Card() {
         .filter(card => card.color === 'red')
         .map(c => c.id)
 
-      const card = game.aChooseCard({
-        actor: player.name,
-        title: 'Choose a Red Card',
-        choices: redCards,
-      })
+      const card = game.aChooseCard(player, redCards)
 
       if (card) {
         game.aTuck(player, card)
