@@ -529,16 +529,33 @@ describe('Innovation', () => {
       expect(result2.selectors[0].choices).toStrictEqual(['Mathematics', 'Tools'])
     })
 
-    test('shares happen once', () => {
+    test('leader goes twice, shares once, demands twice', () => {
+      const game = t.fixtureTopCard('Mapmaking', { numPlayers: 3 })
+      game.testSetBreakpoint('before-first-player', (game) => {
+        t.setColor(game, 'dennis', 'red', ['Barcelona'])
+        t.setColor(game, 'scott', 'green', ['Venice'])
+        t.setColor(game, 'scott', 'purple', ['Ephesus'])
 
-    })
+        t.clearBoard(game, 'micah')
 
-    test('demands go around the table twice', () => {
+        t.setScore(game, 'micah', ['The Wheel', 'Clothing'])
+        t.setScore(game, 'scott', [])
 
-    })
+        t.setDeckTop(game, 'base', 1, ['Mysticism', 'Tools', 'Code of Laws'])
 
-    test('player does non-demands twice', () => {
+        t.setHand(game, 'dennis', ['Masonry'])
+      })
+      const request1 = game.run()
+      const request2 = t.choose(game, request1, 'Endorse.green')
+      const request3 = t.choose(game, request2, 'Clothing') // Micah's choice
 
+      expect(t.cards(game, 'score').sort()).toStrictEqual([
+        'Clothing',
+        'Code of Laws',
+        'The Wheel',
+        'Tools',
+      ])
+      expect(t.cards(game, 'score', 'scott').sort()).toStrictEqual(['Mysticism'])
     })
 
     test('city biscuits must match featured biscuit', () => {
