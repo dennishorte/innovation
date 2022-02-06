@@ -447,6 +447,25 @@ describe('Innovation', () => {
         expect(micahHandAges).toStrictEqual([1, 2])
       })
 
+      test('no share', () => {
+        const game = t.fixtureTopCard('Writing')
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.clearBoard(game, 'dennis')
+          t.clearBoard(game, 'micah')
+          t.setColor(game, 'dennis', 'blue', ['Writing'])
+        })
+        const request = game.run()
+        t.choose(game, request, 'Dogma.Writing')
+
+        const dennis = game.getPlayerByName('dennis')
+        const dennisHandAges = game.getZoneByPlayer(dennis, 'hand').cards.map(c => c.age).sort()
+        expect(dennisHandAges).toStrictEqual([1, 2])
+
+        const micah = game.getPlayerByName('micah')
+        const micahHandAges = game.getZoneByPlayer(micah, 'hand').cards.map(c => c.age).sort()
+        expect(micahHandAges).toStrictEqual([1])
+      })
+
       test('demand', () => {
         // See tests for Construction to see a successful demand.
       })
