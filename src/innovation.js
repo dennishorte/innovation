@@ -635,6 +635,8 @@ Innovation.prototype.aChooseAndTuck = function(player, cards, opts={}) {
     cardNames
       .map(c => this.getCardByName(c))
       .forEach(card => this.aTuck(player, card))
+
+    return cardNames.map(name => this.getCardByName(name))
   }
 }
 
