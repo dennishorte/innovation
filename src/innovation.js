@@ -947,6 +947,15 @@ Innovation.prototype.aMeld = function(player, card, opts={}) {
   return this.mMeld(player, card, opts)
 }
 
+Innovation.prototype.aMeldMany = function(player, cards, opts={}) {
+  let remaining = [...cards]
+  while (remaining.length > 0) {
+    const next = this.aChooseCard(player, remaining)
+    remaining = remaining.filter(card => card !== next)
+    this.aMeld(player, next)
+  }
+}
+
 Innovation.prototype.aRemove = function(player, card, opts={}) {
   const karmaKind = this.aKarma(player, 'remove', { ...opts, card })
   if (karmaKind === 'would-instead') {
@@ -1573,6 +1582,17 @@ Innovation.prototype.mSplayCheck = function() {
       }
     }
   }
+}
+
+Innovation.prototype.mTake = function(player, card) {
+  const hand = this.getZoneByPlayer(player, 'hand')
+  this.mMoveCardTo(card, hand)
+  this.mLog({
+    template: '{player} takes {card} into hand',
+    args: { player, card }
+  })
+  this.mActed(player)
+  return card
 }
 
 Innovation.prototype.mTransfer = function(player, card, target) {
