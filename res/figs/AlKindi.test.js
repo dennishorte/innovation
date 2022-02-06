@@ -28,8 +28,6 @@ describe('Al-Kindi', () => {
     const request1 = game.run()
     const request2 = t.choose(game, request1, 'Dogma.Writing')
 
-    t.dumpLog(game)
-
     expect(t.cards(game, 'hand').sort()).toStrictEqual(['Invention', 'Monotheism', 'Perspective', 'Yi Sun-Sin'])
   })
 })
