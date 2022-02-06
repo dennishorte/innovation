@@ -597,7 +597,7 @@ Innovation.prototype.aChooseAndSplay = function(player, choices, direction, opts
 Innovation.prototype.aChooseAndTransfer = function(player, cards, target, opts={}) {
   const cardNames = this.requestInputSingle({
     actor: player.name,
-    title: 'Choose a Card',
+    title: 'Choose Card(s)',
     choices: cards.map(c => c.id || c),
     ...opts
   })
