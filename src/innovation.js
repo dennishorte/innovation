@@ -791,11 +791,6 @@ Innovation.prototype.aDogma = function(player, card, opts={}) {
 }
 
 Innovation.prototype.aDraw = function(player, opts={}) {
-  const karmaKind = this.aKarma(player, 'draw', opts)
-  if (karmaKind === 'would-instead') {
-    return
-  }
-
   const { age, share } = opts
 
   // Expansion the user should draw from, before looking at empty decks.
@@ -807,6 +802,11 @@ Innovation.prototype.aDraw = function(player, opts={}) {
 
   // Adjust age based on empty decks.
   const [ adjustedAge, adjustedExp ] = this._adjustedDrawDeck(baseAge, baseExp)
+
+  const karmaKind = this.aKarma(player, 'draw', { ...opts, age: adjustedAge })
+  if (karmaKind === 'would-instead') {
+    return
+  }
 
   return this.mDraw(player, adjustedExp, adjustedAge, opts)
 }
