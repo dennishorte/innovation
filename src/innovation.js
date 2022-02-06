@@ -1249,12 +1249,12 @@ Innovation.prototype.getScore = function(player) {
   const bonuses = this.getBonuses(player)
   const bonusPoints = (bonuses[0] || 1) + (bonuses.length - 1)
 
-  /* const karma = this
-   *   .getInfoByKarmaTrigger(player, 'calculate-score')
-   *   .map(card => this.utilApplyKarma(card, 'calculate-score', this, player))
-   *   .reduce((l, r) => l + r, 0)
-   */
-  return inScore + bonusPoints //+ karma
+  const karma = this
+    .getInfoByKarmaTrigger(player, 'calculate-score')
+    .map(info => this.aCardEffect(player, info))
+    .reduce((l, r) => l + r, 0)
+
+  return inScore + bonusPoints + karma
 }
 
 Innovation.prototype.getTopCard = function(player, color) {
