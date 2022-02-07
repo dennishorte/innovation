@@ -138,7 +138,7 @@ TestUtil.testDecreeForTwo = function(figureName, decreeName) {
 }
 
 TestUtil.testZone = function(game, zoneName, expectedCards, opts={}) {
-  const zoneCards = TestUtil.cards(game, zoneName)
+  const zoneCards = TestUtil.cards(game, zoneName, opts.player)
   if (opts.sort) {
     zoneCards.sort()
     expectedCards.sort()

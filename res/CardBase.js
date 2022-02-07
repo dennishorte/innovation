@@ -1,3 +1,5 @@
+const util = require('../src/util.js')
+
 function CardBase() {
   this.id
   this.name
@@ -79,8 +81,21 @@ CardBase.prototype.getBiscuits = function(splay) {
   }
 }
 
-CardBase.prototype.hasKarma = function(trigger) {
-  return this.karmaImpl.some(k => k.trigger === trigger)
+CardBase.prototype.getKarmaInfo = function(trigger) {
+  const matches = []
+  for (let i = 0; i < this.karma.length; i++) {
+    const impl = this.karmaImpl[i]
+    const triggers = util.getAsArray(impl, 'trigger')
+    if (triggers.includes(trigger)) {
+      matches.push({
+        card: this,
+        index: i,
+        text: this.karma[i],
+        impl: this.karmaImpl[i]
+      })
+    }
+  }
+  return matches
 }
 
 CardBase.prototype.getImpl = function(kind) {

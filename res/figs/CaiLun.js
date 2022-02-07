@@ -18,9 +18,26 @@ function Card() {
 
   this.dogmaImpl = []
   this.echoImpl = [
+    (game, player) => {
+
+    }
   ]
   this.inspireImpl = []
   this.karmaImpl = [
+    {
+      trigger: 'achieve',
+      matches: () => true,
+      func(game, player, { card }) {
+
+        return 'would-first'
+      }
+    },
+    {
+      trigger: 'list-achievements',
+      func(game, player) {
+
+      }
+    }
   ]
 }
 

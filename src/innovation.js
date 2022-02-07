@@ -746,16 +746,17 @@ Innovation.prototype.aDogmaHelper = function(player, card, opts) {
   // not affect the number of biscuits used for evaluting the effect.
   const biscuits = this.getBiscuits()
   const primaryBiscuit = card.dogmaBiscuit
+  const biscuitComparator = this._getBiscuitComparator(player, primaryBiscuit, biscuits)
 
   const sharing = this
     .getPlayerAll()
     .filter(p => p !== player)
-    .filter(p => biscuits[p.name][primaryBiscuit] >= biscuits[player.name][primaryBiscuit])
+    .filter(p => biscuitComparator(p))
 
   const demanding = this
     .getPlayerAll()
     .filter(p => p !== player)
-    .filter(p => biscuits[p.name][primaryBiscuit] < biscuits[player.name][primaryBiscuit])
+    .filter(p => !biscuitComparator(p))
 
   // Store the planned effects now, because changes caused by the dogma action
   // should not affect which effects are executed.
@@ -933,11 +934,7 @@ Innovation.prototype.aInspire = function(player, color, opts={}) {
   this.mLogOutdent()
 }
 
-Innovation.prototype.aKarma = function(player, kind, opts={}) {
-  const infos = this
-    .getInfoByKarmaTrigger(player, kind)
-    .filter(info => info.impl.matches && info.impl.matches(this, player, opts))
-
+Innovation.prototype._aKarmaHelper = function(player, infos, opts={}) {
   if (infos.length === 0) {
     return
   }
@@ -961,13 +958,28 @@ Innovation.prototype.aKarma = function(player, kind, opts={}) {
   return info.impl.kind
 }
 
+Innovation.prototype.aKarma = function(player, kind, opts={}) {
+  const infos = this
+    .getInfoByKarmaTrigger(player, kind)
+    .filter(info => info.impl.matches && info.impl.matches(this, player, opts))
+  return this._aKarmaHelper(player, infos, opts)
+}
+
+Innovation.prototype.aKarmaWhenMeld = function(player, card, opts={}) {
+  const infos = card.getKarmaInfo('when-meld')
+  return this._aKarmaHelper(player, infos, opts)
+}
+
 Innovation.prototype.aMeld = function(player, card, opts={}) {
   const karmaKind = this.aKarma(player, 'meld', { ...opts, card })
   if (karmaKind === 'would-instead') {
     return
   }
 
-  return this.mMeld(player, card, opts)
+  this.mMeld(player, card, opts)
+  this.aKarmaWhenMeld(player, card, opts)
+
+  return card
 }
 
 Innovation.prototype.aMeldMany = function(player, cards, opts={}) {
@@ -1192,24 +1204,9 @@ Innovation.prototype.getEffectAge = function(card, age) {
 }
 
 Innovation.prototype.getInfoByKarmaTrigger = function(player, trigger) {
-  const matches = []
-
-  for (const card of this.getTopCards(player)) {
-    for (let i = 0; i < card.karma.length; i++) {
-      const impl = card.karmaImpl[i]
-      const triggers = util.getAsArray(impl, 'trigger')
-      if (triggers.includes(trigger)) {
-        matches.push({
-          card,
-          index: i,
-          text: card.karma[i],
-          impl: card.karmaImpl[i]
-        })
-      }
-    }
-  }
-
-  return matches
+  return this
+    .getTopCards(player)
+    .flatMap(card => card.getKarmaInfo(trigger))
 }
 
 Innovation.prototype.getExpansionList = function() {
@@ -2014,6 +2011,42 @@ Innovation.prototype._generateActionChoicesMeld = function() {
   return {
     name: 'Meld',
     choices: cards
+  }
+}
+
+Innovation.prototype._getBiscuitComparator = function(player, primaryBiscuit, biscuits) {
+  // Some karmas affect how sharing is calculated by adjusting the featured biscuit.
+  const featuredBiscuitKarmas = this
+    .getInfoByKarmaTrigger(player, 'featured-biscuit')
+    .filter(info => info.impl.matches(this, player, { biscuit: primaryBiscuit }))
+
+  let adjustedBiscuit
+
+  if (featuredBiscuitKarmas.length === 0) {
+    adjustedBiscuit = primaryBiscuit
+  }
+  else if (featuredBiscuitKarmas.length === 1) {
+    const info = featuredBiscuitKarmas[0]
+    this.mLog({
+      template: '{card} karma: {text}',
+      args: {
+        card: info.card,
+        text: info.text
+      }
+    })
+    adjustedBiscuit = this.aCardEffect(player, info, { baseBiscuit: primaryBiscuit })
+  }
+  else {
+    throw new Error('Multiple biscuit karmas are not supported')
+  }
+
+  return (other) => {
+    if (adjustedBiscuit === 'score') {
+      return this.getScore(other) >= this.getScore(player)
+    }
+    else {
+      return biscuits[other.name][adjustedBiscuit] >= biscuits[player.name][adjustedBiscuit]
+    }
   }
 }
 
