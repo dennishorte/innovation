@@ -46,7 +46,7 @@ describe('Alexander the Great', () => {
     t.testZone(game, 'green', [], { player: 'micah' })
   })
 
-  test('karma: featured-biscuit (test 2)', () => {
+  test.only('karma: featured-biscuit (test 2)', () => {
     const game = t.fixtureTopCard('Alexander the Great', { expansions: ['base', 'figs'] })
     game.testSetBreakpoint('before-first-player', (game) => {
       t.setColor(game, 'dennis', 'blue', ['Atomic Theory'])
@@ -59,7 +59,7 @@ describe('Alexander the Great', () => {
     const request1 = game.run()
     const request2 = t.choose(game, request1, 'Dogma.Atomic Theory')
 
-    t.testZone(game, 'green', ['Electricity'])
-    t.testZone(game, 'green', ['Bicycle'], { player: 'micah' })
+    t.testZone(game, 'green', ['Bicycle'])
+    t.testZone(game, 'green', ['Electricity'], { player: 'micah' })
   })
 })
