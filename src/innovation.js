@@ -1294,6 +1294,10 @@ Innovation.prototype.getPlayersStartingNext = function() {
   return players
 }
 
+Innovation.prototype.getResources = function() {
+  return res
+}
+
 Innovation.prototype.getScore = function(player) {
   const inScore = this
     .getZoneByPlayer(player, 'score')

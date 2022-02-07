@@ -185,6 +185,10 @@ describe('Innovation', () => {
     test.skip('multiple if/then karmas, only choose one', () => {
 
     })
+
+    test.skip('karmas do not trigger karmas', () => {
+
+    })
   })
 
   describe('actions', () => {

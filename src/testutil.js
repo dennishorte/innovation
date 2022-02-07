@@ -122,6 +122,12 @@ TestUtil.testChoices = function(request, expected) {
   expect(request.selectors[0].choices.sort()).toStrictEqual(expected.sort())
 }
 
+TestUtil.testIsSecondPlayer = function(request) {
+  const selector = request.selectors[0]
+  expect(selector.actor).toBe('micah')
+  expect(selector.title).toBe('Choose First Action')
+}
+
 TestUtil.testDecreeForTwo = function(figureName, decreeName) {
   const game = TestUtil.fixtureTopCard(figureName, { expansions: ['base', 'figs'] })
   game.testSetBreakpoint('before-first-player', (game) => {
