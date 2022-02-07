@@ -97,6 +97,11 @@ TestUtil.fixtureFirstPlayer = function(options) {
     })
   }
 
+  game.testSetBreakpoint('before-first-player', (game) => {
+    TestUtil.clearBoards(game)
+    TestUtil.clearHands(game)
+  })
+
   return game
 }
 
@@ -198,6 +203,12 @@ TestUtil.clearBoard = function(game, playerName) {
     for (const card of cards) {
       game.mReturn(player, card, { silent: true })
     }
+  }
+}
+
+TestUtil.clearBoards = function(game) {
+  for (const player of game.getPlayerAll()) {
+    TestUtil.clearBoard(game, player.name)
   }
 }
 

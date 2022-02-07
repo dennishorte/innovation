@@ -440,11 +440,11 @@ describe('Innovation', () => {
 
         const dennis = game.getPlayerByName('dennis')
         const dennisHandAges = game.getZoneByPlayer(dennis, 'hand').cards.map(c => c.age).sort()
-        expect(dennisHandAges).toStrictEqual([1, 1, 2])
+        expect(dennisHandAges).toStrictEqual([1, 2])
 
         const micah = game.getPlayerByName('micah')
         const micahHandAges = game.getZoneByPlayer(micah, 'hand').cards.map(c => c.age).sort()
-        expect(micahHandAges).toStrictEqual([1, 2])
+        expect(micahHandAges).toStrictEqual([2])
       })
 
       test('no share', () => {
@@ -459,11 +459,11 @@ describe('Innovation', () => {
 
         const dennis = game.getPlayerByName('dennis')
         const dennisHandAges = game.getZoneByPlayer(dennis, 'hand').cards.map(c => c.age).sort()
-        expect(dennisHandAges).toStrictEqual([1, 2])
+        expect(dennisHandAges).toStrictEqual([2])
 
         const micah = game.getPlayerByName('micah')
         const micahHandAges = game.getZoneByPlayer(micah, 'hand').cards.map(c => c.age).sort()
-        expect(micahHandAges).toStrictEqual([1])
+        expect(micahHandAges).toStrictEqual([])
       })
 
       test('demand', () => {
@@ -499,13 +499,13 @@ describe('Innovation', () => {
         const request = game.run()
         const dennis = game.getPlayerByName('dennis')
 
-        expect(game.getZoneByPlayer(dennis, 'hand').cards.length).toBe(1)
+        expect(game.getZoneByPlayer(dennis, 'hand').cards.length).toBe(0)
 
         t.choose(game, request, 'Draw.draw a card')
 
         const dennisCards = game.getZoneByPlayer(dennis, 'hand').cards
-        expect(dennisCards.length).toBe(2)
-        expect(dennisCards.map(c => c.age).sort()).toStrictEqual([1, 1])
+        expect(dennisCards.length).toBe(1)
+        expect(dennisCards.map(c => c.age).sort()).toStrictEqual([1])
       })
 
       test('player draws a card based on top card age (test 2)', () => {
@@ -517,13 +517,11 @@ describe('Innovation', () => {
         const request = game.run()
         const dennis = game.getPlayerByName('dennis')
 
-        expect(game.getZoneByPlayer(dennis, 'hand').cards.length).toBe(1)
-
         t.choose(game, request, 'Draw.draw a card')
 
         const dennisCards = game.getZoneByPlayer(dennis, 'hand').cards
-        expect(dennisCards.length).toBe(2)
-        expect(dennisCards.map(c => c.age).sort()).toStrictEqual([1, 9])
+        expect(dennisCards.length).toBe(1)
+        expect(dennisCards.map(c => c.age).sort()).toStrictEqual([9])
       })
 
       test('draw an 11 ends the game', () => {

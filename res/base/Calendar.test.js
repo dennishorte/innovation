@@ -15,7 +15,7 @@ describe('Calendar', () => {
     expect(t.cards(game, 'hand')).toStrictEqual(['Gunpowder', 'Paper'])
   })
 
-  test('have more', () => {
+  test('have less', () => {
     const game = t.fixtureTopCard('Calendar')
     game.testSetBreakpoint('before-first-player', (game) => {
       t.setHand(game, 'dennis', ['Printing Press'])
