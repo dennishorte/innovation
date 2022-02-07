@@ -461,6 +461,27 @@ Innovation.prototype.aCardEffects = function(
   }
 }
 
+Innovation.prototype.aChooseAge = function(player, ages, opts={}) {
+  if (ages.length === 0) {
+    this.mLogNoEffect()
+    return undefined
+  }
+
+  const chosenAges = this.requestInputSingle({
+    actor: player.name,
+    title: 'Choose Age',
+    choices: ages,
+    ...opts
+  })
+  if (chosenAges.length === 0) {
+    this.mLogDoNothing(player)
+    return undefined
+  }
+  else {
+    return chosenAges[0]
+  }
+}
+
 Innovation.prototype.aChooseCard = function(player, cards, opts) {
   if (cards.length === 0) {
     this.mLogNoEffect()
@@ -740,7 +761,7 @@ Innovation.prototype.aDogmaHelper = function(player, card, opts) {
   // should not affect which effects are executed.
   const effectCards = color
     .cards
-    .filter(card => card.checkEchoIsVisible(color.splay))
+    .filter(card => this.checkEffectIsVisible(card))
     .reverse()  // Start from the bottom of the stack when executing effects
 
   if (opts.artifact) {
@@ -750,7 +771,7 @@ Innovation.prototype.aDogmaHelper = function(player, card, opts) {
   }
 
   // Regardless of normal dogma or artifact dogma, the selected card is executed last.
-  if (card.dogma.length > 0) {
+  if (!effectCards.includes(card)) {
     effectCards.push(card)
   }
 
@@ -1060,20 +1081,31 @@ Innovation.prototype.checkCardIsTop = function(card) {
   return this.getZoneByCard(card).cards[0] === card
 }
 
+Innovation.prototype.checkEffectIsVisible = function(card) {
+  const isTop = this.checkCardIsTop(card)
+
+  if (isTop) {
+    return card.dogma.length > 0 || card.echo.length > 0
+  }
+  else {
+    const zone = this.getZoneByCard(card)
+    return card.checkEchoIsVisible(zone.splay)
+  }
+}
+
 Innovation.prototype.checkSameTeam = function(p1, p2) {
   return p1.team === p2.team
 }
 
-Innovation.prototype.checkZoneHasVisibileDogmaOrEcho = function(zone) {
+Innovation.prototype.checkZoneHasVisibleDogmaOrEcho = function(zone) {
   if (zone.cards.length === 0) {
     return false
   }
-  else if (zone.cards[0].dogma.length > 0) {
+  if (zone.cards[0].dogma.length > 0) {
     return true
   }
-  else {
-    return zone.cards.some(card => card.checkEchoIsVisible(zone.splay))
-  }
+
+  return zone.cards.some(card => this.checkEffectIsVisible(card))
 }
 
 
@@ -1873,7 +1905,7 @@ Innovation.prototype._generateActionChoicesDogma = function() {
   const dogmaTargets = this
     .utilColors()
     .map(color => this.getZoneByPlayer(player, color))
-    .filter(this.checkZoneHasVisibileDogmaOrEcho)
+    .filter(zone => this.checkZoneHasVisibleDogmaOrEcho(zone))
     .map(zone => zone.cards[0].name)
 
   return {
@@ -1907,7 +1939,7 @@ Innovation.prototype._generateActionChoicesEndorse = function() {
   const stacksWithEndorsableEffects = this
     .utilColors()
     .map(color => this.getZoneByPlayer(player, color))
-    .filter(zone => this.checkZoneHasVisibileDogmaOrEcho(zone))
+    .filter(zone => this.checkZoneHasVisibleDogmaOrEcho(zone))
 
   const colors = []
 

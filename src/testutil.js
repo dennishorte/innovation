@@ -113,6 +113,10 @@ TestUtil.fixtureTopCard = function(cardName, options) {
   return game
 }
 
+TestUtil.testChoices = function(request, expected) {
+  expect(request.selectors[0].choices.sort()).toStrictEqual(expected.sort())
+}
+
 TestUtil.testDecreeForTwo = function(figureName) {
   const game = TestUtil.fixtureTopCard(figureName, { expansions: ['base', 'figs'] })
   game.testSetBreakpoint('before-first-player', (game) => {
@@ -120,6 +124,15 @@ TestUtil.testDecreeForTwo = function(figureName) {
   })
   const request1 = game.run()
   expect(TestUtil.getChoices(request1, 'Decree')).toStrictEqual(['Rivalry'])
+}
+
+TestUtil.testZone = function(game, zoneName, expectedCards, opts={}) {
+  const zoneCards = TestUtil.cards(game, zoneName)
+  if (opts.sort) {
+    zoneCards.sort()
+    expectedCards.sort()
+  }
+  expect(zoneCards).toStrictEqual(expectedCards)
 }
 
 
