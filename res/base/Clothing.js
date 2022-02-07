@@ -47,7 +47,7 @@ function Card() {
       }
       else {
         for (let i = 0; i < playerOnlyColors; i++) {
-          game.aDrawAndScore(player, 1)
+          game.aDrawAndScore(player, game.getEffectAge(this, 1))
         }
       }
     }

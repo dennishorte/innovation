@@ -17,7 +17,7 @@ function Card() {
 
   this.dogmaImpl = [
     (game, player) => {
-      game.aDrawAndForeshadow(player, 2)
+      game.aDrawAndForeshadow(player, game.getEffectAge(this, 2))
     }
   ]
   this.echoImpl = [

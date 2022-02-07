@@ -19,7 +19,7 @@ function Card() {
 
   this.dogmaImpl = [
     (game, player) => {
-      game.aDrawAndTuck(player, 5)
+      game.aDrawAndTuck(player, game.getEffectAge(this, 5))
     },
 
     (game, player) => {

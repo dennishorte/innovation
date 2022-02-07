@@ -18,11 +18,11 @@ function Card() {
 
   this.dogmaImpl = [
     (game, player) => {
-      game.aDrawAndScore(player, 10)
+      game.aDrawAndScore(player, game.getEffectAge(this, 10))
     },
     (game, player) => {
-      game.aDrawAndMeld(player, 10)
-      const card = game.aDrawAndMeld(player, 10)
+      game.aDrawAndMeld(player, game.getEffectAge(this, 10))
+      const card = game.aDrawAndMeld(player, game.getEffectAge(this, 10))
       game.mLog({
         template: '{player} will execute {card}',
         args: { player, card }

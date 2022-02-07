@@ -43,7 +43,7 @@ function Card() {
         game.aMeld(player, cards[0])
       }
 
-      game.aDraw(player, { age: 1 })
+      game.aDraw(player, { age: game.getEffectAge(this, 1) })
     }
   ]
   this.echoImpl = []

@@ -21,7 +21,7 @@ function Card() {
       const choices = game
         .getZoneByPlayer(player, 'score')
         .cards
-        .filter(card => card.age === 1)
+        .filter(card => card.age === game.getEffectAge(this, 1))
         .map(card => card.id)
       const target = game.getZoneByPlayer(leader, 'score')
       const transferredCards = game.aChooseAndTransfer(player, choices, target)
@@ -33,7 +33,7 @@ function Card() {
 
     (game, player) => {
       if (game.state.dogmaInfo.transferred) {
-        game.aDrawAndScore(player, 1)
+        game.aDrawAndScore(player, game.getEffectAge(this, 1))
       }
       else {
         game.mLogNoEffect()

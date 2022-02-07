@@ -19,7 +19,7 @@ function Card() {
   this.dogmaImpl = []
   this.echoImpl = [
     (game, player) => {
-      const age = game.aChooseAge(player, [2, 3])
+      const age = game.aChooseAge(player, [game.getEffectAge(this, 2), game.getEffectAge(this, 3)])
       game.aDrawAndForeshadow(player, age)
     }
   ]

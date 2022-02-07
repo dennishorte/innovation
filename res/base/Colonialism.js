@@ -18,7 +18,7 @@ function Card() {
   this.dogmaImpl = [
     (game, player) => {
       while (true) {
-        const card = game.aDrawAndTuck(player, 3)
+        const card = game.aDrawAndTuck(player, game.getEffectAge(this, 3))
         if (card.biscuits.includes('c')) {
           game.mLog({ template: 'effect repeats' })
         }

@@ -17,7 +17,7 @@ function Card() {
 
   this.dogmaImpl = [
     (game, player, { leader }) => {
-      game.aDraw(player, { age: 1 })
+      game.aDraw(player, { age: game.getEffectAge(this, 1) })
 
       const sortedHand = game
         .getZoneByPlayer(player, 'hand')

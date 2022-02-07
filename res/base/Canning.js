@@ -20,7 +20,7 @@ function Card() {
     (game, player) => {
       const decision = game.aYesNo(player, 'Draw and tuck a {6}?')
       if (decision) {
-        game.aDrawAndTuck(player, 6)
+        game.aDrawAndTuck(player, game.getEffectAge(this, 6))
 
         const toReturn = game
           .getTopCards(player)

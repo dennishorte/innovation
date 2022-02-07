@@ -22,7 +22,7 @@ function Card() {
     },
 
     (game, player) => {
-      game.aDrawAndMeld(player, 7)
+      game.aDrawAndMeld(player, game.getEffectAge(this, 7))
     },
   ]
   this.echoImpl = []

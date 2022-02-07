@@ -27,8 +27,8 @@ function Card() {
         .length
 
       if (scoreCount > handCount) {
-        game.aDraw(player, { age: 3 })
-        game.aDraw(player, { age: 3 })
+        game.aDraw(player, { age: game.getEffectAge(this, 3) })
+        game.aDraw(player, { age: game.getEffectAge(this, 3) })
       }
       else {
         game.mLogNoEffect()

@@ -47,7 +47,7 @@ function Card() {
       }
 
       // Draw a 2
-      game.aDraw(player, { age: 2 })
+      game.aDraw(player, { age: game.getEffectAge(this, 2) })
     },
     (game, player) => {
       const achievementAvailable = game.checkAchievementAvailable('Empire')

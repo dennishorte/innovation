@@ -32,7 +32,7 @@ function Card() {
     },
 
     (game, player) => {
-      game.aDrawAndScore(player, 6)
+      game.aDrawAndScore(player, game.getEffectAge(this, 6))
     },
 
     (game, player) => {

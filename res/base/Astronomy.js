@@ -19,7 +19,7 @@ function Card() {
   this.dogmaImpl = [
     (game, player) => {
       while (true) {
-        const card = game.aDrawAndReveal(player, 6)
+        const card = game.aDrawAndReveal(player, game.getEffectAge(this, 6))
         if (card) {
           if (card.color === 'green' || card.color === 'blue') {
             game.aMeld(player, card)

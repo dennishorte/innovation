@@ -26,7 +26,7 @@ function Card() {
       const card = game.aChooseCard(player, choices)
       if (card) {
         game.aTransfer(player, card, game.getZoneByPlayer(leader, card.color))
-        game.aDrawAndScore(player, 5)
+        game.aDrawAndScore(player, game.getEffectAge(this, 5))
       }
       else {
         game.mLogNoEffect()

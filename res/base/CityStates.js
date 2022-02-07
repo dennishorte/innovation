@@ -26,7 +26,7 @@ function Card() {
         if (card) {
           const transferred = game.aTransfer(player, card, game.getZoneByPlayer(leader, card.color))
           if (transferred) {
-            game.aDraw(player, { age: 1 })
+            game.aDraw(player, { age: game.getEffectAge(this, 1) })
           }
           else {
             game.mLog({ template: 'no card was transferred' })

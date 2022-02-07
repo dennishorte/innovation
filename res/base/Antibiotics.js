@@ -24,8 +24,8 @@ function Card() {
       if (cards) {
         const numValues = util.array.distinct(cards.map(c => c.age)).length
         for (let i = 0; i < numValues; i++) {
-          game.aDraw(player, { age: 8 })
-          game.aDraw(player, { age: 8 })
+          game.aDraw(player, { age: game.getEffectAge(this, 8) })
+          game.aDraw(player, { age: game.getEffectAge(this, 8) })
         }
       }
     }

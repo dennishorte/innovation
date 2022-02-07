@@ -19,7 +19,7 @@ function Card() {
   this.echoImpl = []
   this.inspireImpl = [
     (game, player) => {
-      game.aDrawAndTuck(player, 2)
+      game.aDrawAndTuck(player, game.getEffectAge(this, 2))
     }
   ]
   this.karmaImpl = [

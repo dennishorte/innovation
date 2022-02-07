@@ -22,7 +22,7 @@ function Card() {
       let red = false
 
       for (let i = 0; i < count; i++) {
-        const card = game.aDrawAndReveal(player, 4)
+        const card = game.aDrawAndReveal(player, game.getEffectAge(this, 4))
         red = red || card.color === 'red'
       }
 
