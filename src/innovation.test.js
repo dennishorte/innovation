@@ -147,6 +147,16 @@ describe('Innovation', () => {
     })
   })
 
+  describe('achievement victory', () => {
+    test('check after each step of each action', () => {
+
+    })
+
+    test('list of player achievements includes special ones', () => {
+
+    })
+  })
+
   describe('cities', () => {
     test.skip('plus icon', () => {
 

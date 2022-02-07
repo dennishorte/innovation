@@ -42,8 +42,6 @@ describe('Alexander the Great', () => {
     const request1 = game.run()
     const request2 = t.choose(game, request1, 'Dogma.Atomic Theory')
 
-    t.dumpLog(game)
-
     t.testZone(game, 'green', ['Electricity'])
     t.testZone(game, 'green', [], { player: 'micah' })
   })

@@ -31,7 +31,6 @@ Innovation.prototype._mainProgram = function() {
   this.firstPicks()
   this.mainLoop()
 }
-
 Innovation.prototype._gameOver = function(event) {
   this.mLog({
     template: '{player} wins due to {reason}',
@@ -1124,6 +1123,36 @@ Innovation.prototype.checkZoneHasVisibleDogmaOrEcho = function(zone) {
 ////////////////////////////////////////////////////////////////////////////////
 // Getters
 
+Innovation.prototype.getAchievementsByPlayer = function(player) {
+  const ach = {
+    standard: [],
+    special: [],
+    other: [],
+    total: 0
+  }
+
+  for (const card of this.getZoneByPlayer(player, 'achievements').cards) {
+    if (card.isSpecialAchievement) {
+      ach.special.push(card)
+    }
+    else {
+      ach.standard.push(card)
+    }
+  }
+
+  const karmaInfos = this.getInfoByKarmaTrigger(player, 'extra-achievements')
+  for (const info of karmaInfos) {
+    const count = info.impl.func(this, player)
+    for (let i = 0; i < count; i++) {
+      ach.other.push(info.card)
+    }
+  }
+
+  ach.total = ach.standard.length + ach.special.length + ach.other.length
+
+  return ach
+}
+
 Innovation.prototype.getBiscuits = function() {
   const biscuits = this
     .getPlayerAll()
@@ -1243,6 +1272,14 @@ Innovation.prototype.getLogIndent = function(msg) {
     }
   }
   return indent
+}
+
+Innovation.prototype.getNumAchievementsToWin = function() {
+  const base = 6
+  const numPlayerAdjustment = 2 - this.getPlayerAll().length
+  const numExpansionAdjustment = this.getExpansionList().length - 1
+
+  return base + numPlayerAdjustment + numExpansionAdjustment
 }
 
 Innovation.prototype.getPlayerAll = function() {
@@ -1370,6 +1407,17 @@ Innovation.prototype.mAchievementCheck = function() {
   }
 }
 
+Innovation.prototype.mAchievementVictoryCheck = function() {
+  for (const player of this.getPlayerAll()) {
+    if (this.getAchievementsByPlayer(player).total >= this.getNumAchievementsToWin()) {
+      throw new GameOverEvent({
+        player,
+        reason: 'achievements'
+      })
+    }
+  }
+}
+
 Innovation.prototype.mAchieve = function(player, card) {
   const target = this.getZoneByPlayer(player, 'achievements')
   this.mLog({
@@ -1395,6 +1443,7 @@ Innovation.prototype.mActed = function(player) {
   // Any time someone acts, there is the possibility that they should claim
   // a special achievement.
   this.mAchievementCheck()
+  this.mAchievementVictoryCheck()
 }
 
 Innovation.prototype.mAdjustCardVisibility = function(card) {
