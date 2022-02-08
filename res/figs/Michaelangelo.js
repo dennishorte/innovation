@@ -17,8 +17,14 @@ function Card() {
 
   this.dogmaImpl = []
   this.echoImpl = []
-  this.inspireImpl = []
-  this.karmaImpl = []
+  this.inspireImpl = (game, player) => {
+
+  }
+  this.karmaImpl = [
+    {
+      trigger: 'list-score',
+    }
+  ]
 }
 
 Card.prototype = Object.create(CardBase.prototype)

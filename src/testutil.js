@@ -118,6 +118,11 @@ TestUtil.fixtureTopCard = function(cardName, options) {
   return game
 }
 
+TestUtil.testActionChoices = function(request, action, expected) {
+  const actionChoices = request.selectors[0].choices.find(c => c.name === action).choices
+  expect(actionChoices.sort()).toStrictEqual(expected.sort())
+}
+
 TestUtil.testChoices = function(request, expected) {
   expect(request.selectors[0].choices.sort()).toStrictEqual(expected.sort())
 }

@@ -345,8 +345,7 @@ Innovation.prototype.action = function(count) {
   const arg = chosenAction.selection[0]
 
   if (name === 'Achieve') {
-    const age = parseInt(arg.slice(4))
-    this.aClaimAchievement(player, { age, isStandard: true })
+    this.aAchieveAction(player, arg)
   }
   else if (name === 'Decree') {
     this.aDecree(player, arg)
@@ -434,6 +433,17 @@ Innovation.prototype.endTurn = function() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Actions
+
+Innovation.prototype.aAchieveAction = function(player, arg) {
+  if (arg.startsWith('age ')) {
+    const age = parseInt(arg.slice(4))
+    this.aClaimAchievement(player, { age, isStandard: true })
+  }
+  else {
+    const card = this.getCardByName(arg)
+    this.aClaimAchievement(player, { card })
+  }
+}
 
 Innovation.prototype.aCardEffect = function(player, info, opts) {
   const fn = typeof info.impl === 'function' ? info.impl : info.impl.func
@@ -2017,16 +2027,30 @@ Innovation.prototype._generateActionChoicesAchieve = function() {
   const player = this.getPlayerCurrent()
   const playerScore = this.getScore(player)
   const topCardAge = this.getHighestTopAge(player)
-  const eligible = this
+  const achievementsZone = this
     .getZoneById('achievements')
     .cards
     .filter(c => !c.isSpecialAchievement)
+
+  const fromKarma = this
+    .getInfoByKarmaTrigger(player, 'list-achievements')
+    .flatMap(info => info.impl.func(this, player))
+
+  const eligible = [achievementsZone, fromKarma]
+    .flat()
     .filter(card => {
       const ageRequirement = card.age <= topCardAge
       const scoreRequirement = this._scoreCost(player, card) <= playerScore
       return ageRequirement && scoreRequirement
     })
-    .map(ach => `age ${ach.age}`)
+    .map(ach => {
+      if (ach.zone === 'achievements') {
+        return `age ${ach.age}`
+      }
+      else {
+        return ach.id
+      }
+    })
     .sort()
   const distinct = util.array.distinct(eligible).sort()
 

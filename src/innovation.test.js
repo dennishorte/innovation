@@ -369,6 +369,20 @@ describe('Innovation', () => {
 
         expect(t.cards(game, 'hand', 'micah')).toStrictEqual([])
       })
+
+      test('can achieve cards made available by karma', () => {
+        const game = t.fixtureTopCard('Amina Sukhera', { expansions: ['base', 'figs'] })
+        game.testSetBreakpoint('before-first-player', (game) => {
+          t.setAvailableAchievements(game, ['Code of Laws'])
+          t.setColor(game, 'dennis', 'green', ['The Wheel'])
+          t.setColor(game, 'dennis', 'yellow', ['Fermenting'])
+          t.setScore(game, 'dennis', ['Statistics'])
+        })
+        const request1 = game.run()
+        const request2 = t.choose(game, request1, 'Achieve.The Wheel')
+
+        t.testZone(game, 'achievements', ['The Wheel'])
+      })
     })
 
     describe('decree action', () => {
