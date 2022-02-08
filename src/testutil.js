@@ -137,6 +137,23 @@ TestUtil.testDecreeForTwo = function(figureName, decreeName) {
   expect(TestUtil.getChoices(request1, 'Decree')).toStrictEqual([decreeName])
 }
 
+TestUtil.testNoFade = function(cardName) {
+  const game = TestUtil.fixtureFirstPlayer({ expansions: ['base', 'figs'] })
+  game.testSetBreakpoint('before-first-player', (game) => {
+    TestUtil.setColor(game, 'dennis', 'blue', ['Albert Einstein'])
+    TestUtil.setColor(game, 'dennis', 'purple', ['Al-Kindi'])
+    TestUtil.setColor(game, 'dennis', 'green', ['Adam Smith'])
+
+    const targetCard = game.getCardByName(cardName)
+    TestUtil.setColor(game, 'dennis', targetCard.color, [targetCard.id])
+  })
+
+  const request1 = game.run()
+  const request2 = TestUtil.choose(game, request1, 'Draw.draw a card')
+
+  TestUtil.testIsSecondPlayer(request2)
+}
+
 TestUtil.testZone = function(game, zoneName, expectedCards, opts={}) {
   const zoneCards = TestUtil.cards(game, zoneName, opts.player)
   if (opts.sort) {
