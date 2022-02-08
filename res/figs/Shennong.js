@@ -17,7 +17,9 @@ function Card() {
 
   this.dogmaImpl = []
   this.echoImpl = []
-  this.inspireImpl = []
+  this.inspireImpl = (player, game) => {
+
+  }
   this.karmaImpl = [
     {
       trigger: 'foreshadow',

@@ -372,6 +372,40 @@ Innovation.prototype.action = function(count) {
   }
 
   this.mLogOutdent()
+
+  this.fadeFiguresCheck()
+}
+
+Innovation.prototype.fadeFiguresCheck = function() {
+  for (const player of this.getPlayerAll()) {
+    const topFiguresFn = () => this
+      .getTopCards(player)
+      .filter(card => card.expansion === 'figs')
+
+    if (topFiguresFn().length > 1) {
+      this.mLog({
+        template: '{player} has {count} figures and must fade some',
+        args: { player, count: topFiguresFn().length }
+      })
+      this.mLogIndent()
+
+      while (topFiguresFn().length > 1) {
+        const karmaInfos = this.getInfoByKarmaTrigger(player, 'no-fade')
+        if (karmaInfos.length > 0) {
+          this.mLog({
+            template: '{player} fades nothing due to {card}',
+            args: { player, card: karmaInfos[0].card }
+          })
+          break
+        }
+
+        const toFade = this.aChooseCard(player, topFiguresFn())
+        this.aScore(player, toFade)
+      }
+
+      this.mLogOutdent()
+    }
+  }
 }
 
 Innovation.prototype.endTurn = function() {

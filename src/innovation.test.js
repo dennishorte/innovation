@@ -157,6 +157,24 @@ describe('Innovation', () => {
     })
   })
 
+  describe('figures fade at end of each action', () => {
+    test('choose and fade, repeatedly', () => {
+      const game = t.fixtureFirstPlayer({ expansions: ['base', 'figs'] })
+      game.testSetBreakpoint('before-first-player', (game) => {
+        t.setColor(game, 'dennis', 'red', ['Alexander the Great'])
+        t.setColor(game, 'dennis', 'purple', ['Alfred Nobel', 'Adam Smith'])
+        t.setColor(game, 'dennis', 'yellow', ['Shennong', 'Alex Trebek'])
+      })
+      const request1 = game.run()
+      const request2 = t.choose(game, request1, 'Draw.draw a card')
+      const request3 = t.choose(game, request2, 'Shennong')
+      const request4 = t.choose(game, request3, 'Alexander the Great')
+      const request5 = t.choose(game, request4, 'Alex Trebek')
+
+      t.testIsSecondPlayer(request5)
+    })
+  })
+
   describe('cities', () => {
     test.skip('plus icon', () => {
 
