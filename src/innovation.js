@@ -66,6 +66,7 @@ Innovation.prototype.initializeTransientState = function() {
   this.mResetMonumentCounts()
   this.state.turn = 1
   this.state.round = 1
+  this.state.karmaDepth = 0
 }
 
 Innovation.prototype.initializePlayers = function() {
@@ -845,6 +846,57 @@ Innovation.prototype.aDogma = function(player, card, opts={}) {
   this.mLogOutdent()
 }
 
+Innovation.prototype._getAgeForDrawAction = function(player) {
+  const karmaInfos = this.getInfoByKarmaTrigger(player, 'top-card-value')
+
+  if (karmaInfos.length > 1) {
+    throw new Error('Too many karma infos for top-card-value. I do not know what to do.')
+  }
+
+  const ageValues = this
+    .utilColors()
+    .map(color => {
+      const zone = this.getZoneByPlayer(player, color)
+      if (zone.cards.length === 0) {
+        return 1
+      }
+
+      const karmaMatches = (
+        karmaInfos.length === 1
+        && karmaInfos[0].impl.matches(this, player, { action: 'draw', color })
+      )
+      if (karmaMatches && !this.checkInKarma()) {
+        this._karmaIn()
+        const result = karmaInfos[0].impl.func(this, player, { color })
+        this._karmaOut()
+        return result
+      }
+      else {
+        return zone.cards[0].age
+      }
+    })
+
+  return Math.max(...ageValues)
+}
+
+Innovation.prototype._getAgeForInspireAction = function(player, color) {
+  const karmaInfos = this
+    .getInfoByKarmaTrigger(player, 'top-card-value')
+    .filter(info => info.impl.matches(this, player, { action: 'inspire', color }))
+  const zone = this.getZoneByPlayer(player, color)
+
+  if (karmaInfos.length === 1) {
+    const info = karmaInfos[0]
+    this._karmaIn()
+    const result = info.impl.func(this, player, { color })
+    this._karmaOut()
+    return result
+  }
+  else {
+    return zone.cards[0].age
+  }
+}
+
 Innovation.prototype.aDraw = function(player, opts={}) {
   const { age, share } = opts
 
@@ -852,8 +904,8 @@ Innovation.prototype.aDraw = function(player, opts={}) {
   const baseExp = opts.exp || this._determineBaseDrawExpansion(player, share)
 
   // If age is not specified, draw based on player's current highest top card.
-  const highestTopAge = this.getHighestTopAge(player)
-  const baseAge = age || highestTopAge || 1
+  const highestTopAge = this._getAgeForDrawAction(player)
+  const baseAge = age !== undefined ? (age || 1) : (highestTopAge || 1)
 
   // Adjust age based on empty decks.
   const [ adjustedAge, adjustedExp ] = this._adjustedDrawDeck(baseAge, baseExp)
@@ -939,7 +991,6 @@ Innovation.prototype.aInspire = function(player, color, opts={}) {
   this.mLogIndent()
 
   const zone = this.getZoneByPlayer(player, color)
-  const drawAge = zone.cards[0].age
   const biscuits = this.getBiscuits()
 
   // Gather effects
@@ -962,6 +1013,7 @@ Innovation.prototype.aInspire = function(player, color, opts={}) {
     )
   }
 
+  const drawAge = this._getAgeForInspireAction(player, color)
   this.aDraw(player, { age: drawAge })
 
   this.mLogOutdent()
@@ -985,7 +1037,9 @@ Innovation.prototype._aKarmaHelper = function(player, infos, opts={}) {
     }
   })
   this.mLogIndent()
+  this._karmaIn()
   this.aCardEffect(player, info, opts)
+  this._karmaOut()
   this.mLogOutdent()
 
   return info.impl.kind
@@ -1138,6 +1192,10 @@ Innovation.prototype.checkEffectIsVisible = function(card) {
   }
 }
 
+Innovation.prototype.checkInKarma = function() {
+  return this.state.karmaDepth > 0
+}
+
 Innovation.prototype.checkSameTeam = function(p1, p2) {
   return p1.team === p2.team
 }
@@ -1267,6 +1325,10 @@ Innovation.prototype.getEffectAge = function(card, age) {
 }
 
 Innovation.prototype.getInfoByKarmaTrigger = function(player, trigger) {
+  // Karmas can't trigger while executing another karma.
+  if (this.checkInKarma()) {
+    return []
+  }
   return this
     .getTopCards(player)
     .flatMap(card => card.getKarmaInfo(trigger))
@@ -2131,6 +2193,15 @@ Innovation.prototype._getBiscuitComparator = function(player, primaryBiscuit, bi
       return biscuits[other.name][adjustedBiscuit] >= biscuits[player.name][adjustedBiscuit]
     }
   }
+}
+
+Innovation.prototype._karmaIn = function() {
+  this.state.karmaDepth += 1
+}
+
+Innovation.prototype._karmaOut = function() {
+  util.assert(this.state.karmaDepth > 0, "Stepping out of zero karma")
+  this.state.karmaDepth -= 1
 }
 
 Innovation.prototype._walkZones = function(root, fn, path=[]) {
