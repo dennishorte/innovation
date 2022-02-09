@@ -1318,6 +1318,10 @@ Innovation.prototype.getCardByName = function(name) {
   return res.all.byName[name]
 }
 
+Innovation.prototype.getCardsByZone = function(player, zoneName) {
+  return this.getZoneByPlayer(player, zoneName).cards
+}
+
 Innovation.prototype.getEffectAge = function(card, age) {
   const cardZone = this.getZoneByCard(card)
   const player = this.getPlayerByZone(cardZone)
@@ -1335,6 +1339,9 @@ Innovation.prototype.getEffectAge = function(card, age) {
 }
 
 Innovation.prototype.getInfoByKarmaTrigger = function(player, trigger) {
+  util.assert(typeof player.name === 'string', 'First parameter must be player object')
+  util.assert(typeof trigger === 'string', 'Second parameter must be string.')
+
   // Karmas can't trigger while executing another karma.
   if (this.checkInKarma()) {
     return []
@@ -2020,7 +2027,12 @@ Innovation.prototype._scoreCost = function(player, card) {
     .cards
     .filter(c => c.age === card.age)
 
-  return card.age * 5 * (sameAge.length + 1)
+  const karmaAdjustment = this
+    .getInfoByKarmaTrigger(player, 'achievement-cost-discount')
+    .map(info => info.impl.func(this, player, { card }))
+    .reduce((l, r) => l + r, 0)
+
+  return card.age * 5 * (sameAge.length + 1) - karmaAdjustment
 }
 
 Innovation.prototype._generateActionChoicesAchieve = function() {
