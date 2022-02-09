@@ -166,11 +166,12 @@ Innovation.prototype.initializeZonesAchievements = function() {
 }
 
 Innovation.prototype.initializeZonesPlayers = function() {
+  const self = this
   const zones = this.state.zones
   zones.players = {}
 
   function _addPlayerZone(player, name, kind, root) {
-    root[name] = new Zone(this, `players.${player.name}.${name}`, kind)
+    root[name] = new Zone(self, `players.${player.name}.${name}`, kind)
     root[name].owner = player.name
   }
 

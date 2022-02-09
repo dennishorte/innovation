@@ -18,11 +18,17 @@ function Card() {
   this.dogmaImpl = []
   this.echoImpl = []
   this.inspireImpl = (game, player) => {
-
+    game.aChooseAndScore(player, game.getCardsByZone(player, 'hand'))
   }
   this.karmaImpl = [
     {
       trigger: 'list-score',
+      func(game, player) {
+        return [
+          ...game.getZoneByPlayer(player, 'score')._cards,
+          ...game.getZoneByPlayer(player, 'hand')._cards,
+        ]
+      }
     }
   ]
 }
