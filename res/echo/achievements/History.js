@@ -13,7 +13,7 @@ module.exports = function() {
 
     // Convert each stack to a count of echo effects
       .map(zone => zone
-        .cards
+        .cards()
         .map(c => (game.getBiscuitsRaw(c, zone.splay).match(/&/g) || []).length )
         .reduce((prev, curr) => prev + curr, 0)
       )

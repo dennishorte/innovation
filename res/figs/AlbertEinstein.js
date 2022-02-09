@@ -21,7 +21,7 @@ function Card() {
     (game, player) => {
       const cards = game
         .getZoneByPlayer(player, 'hand')
-        .cards
+        .cards()
         .filter(card => card.biscuits.includes('s') || card.biscuits.includes('i'))
 
       game.aMeldMany(player, cards)

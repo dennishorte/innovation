@@ -20,7 +20,7 @@ function Card() {
     (game, player, { leader }) => {
       const choices = game
         .getZoneByPlayer(player, 'score')
-        .cards
+        .cards()
         .filter(card => card.age === game.getEffectAge(this, 1))
         .map(card => card.id)
       const target = game.getZoneByPlayer(leader, 'score')

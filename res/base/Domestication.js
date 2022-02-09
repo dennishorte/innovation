@@ -19,7 +19,7 @@ function Card() {
     (game, player) => {
       const sortedCards = game
         .getZoneByPlayer(player, 'hand')
-        .cards
+        .cards()
         .sort((l, r) => l.age = r.age)
 
       if (sortedCards.length === 0) {

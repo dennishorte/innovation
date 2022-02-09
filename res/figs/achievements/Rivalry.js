@@ -18,7 +18,7 @@ function Card() {
     // Choose three cards
     const scoreCards = game
       .getZoneByPlayer(other, 'score')
-      .cards
+      .cards()
       .map(c => c.id)
     const cardNames = game.requestInputSingle({
       actor: player.name,

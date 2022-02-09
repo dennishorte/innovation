@@ -35,7 +35,7 @@ function Card() {
 
       const choices = game
         .getZoneByPlayer(player, 'hand')
-        .cards
+        .cards()
         .map(c => c.id)
       game.aChooseAndTuck(player, choices, { count })
     },

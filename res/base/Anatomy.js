@@ -17,7 +17,7 @@ function Card() {
 
   this.dogmaImpl = [
     (game, player) => {
-      const cards = game.aChooseAndReturn(player, game.getZoneByPlayer(player, 'score').cards)
+      const cards = game.aChooseAndReturn(player, game.getZoneByPlayer(player, 'score').cards())
       if (cards) {
         const returned = cards[0]
         const matchingTopCards = game

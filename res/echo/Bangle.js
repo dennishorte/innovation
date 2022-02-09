@@ -24,7 +24,7 @@ function Card() {
     (game, player) => {
       const redCards = game
         .getZoneByPlayer(player, 'hand')
-        .cards
+        .cards()
         .filter(card => card.color === 'red')
         .map(c => c.id)
 

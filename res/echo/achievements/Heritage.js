@@ -13,7 +13,7 @@ module.exports = function() {
 
       // Convert each stack to a count of hexes
       .map(zone => zone
-        .cards
+        .cards()
         .map(c => (game.getBiscuitsRaw(c, zone.splay).match(/h/g) || []).length )
         .reduce((prev, curr) => prev + curr, 0)
       )

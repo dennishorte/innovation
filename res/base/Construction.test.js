@@ -30,7 +30,7 @@ describe('Construction', () => {
       t.choose(game, request2, 'Experimentation', 'Statistics')
 
       const micah = game.getPlayerByName('micah')
-      const micahHandAges = game.getZoneByPlayer(micah, 'hand').cards.map(c => c.age).sort()
+      const micahHandAges = game.getZoneByPlayer(micah, 'hand').cards().map(c => c.age).sort()
       expect(micahHandAges).toStrictEqual([2, 4])
     })
   })
@@ -48,7 +48,7 @@ describe('Construction', () => {
       t.choose(game, request1, 'Dogma.Construction')
 
       const dennis = game.getPlayerByName('dennis')
-      const dennisAchievements = game.getZoneByPlayer(dennis, 'achievements').cards.map(c => c.name)
+      const dennisAchievements = game.getZoneByPlayer(dennis, 'achievements').cards().map(c => c.name)
       expect(dennisAchievements).toStrictEqual(['Empire'])
     })
 
@@ -72,7 +72,7 @@ describe('Construction', () => {
       t.choose(game, request1, 'Dogma.Construction')
 
       const dennis = game.getPlayerByName('dennis')
-      const dennisAchievements = game.getZoneByPlayer(dennis, 'achievements').cards.map(c => c.name)
+      const dennisAchievements = game.getZoneByPlayer(dennis, 'achievements').cards().map(c => c.name)
       expect(dennisAchievements).toStrictEqual([])
     })
 
@@ -88,7 +88,7 @@ describe('Construction', () => {
       t.choose(game, request1, 'Dogma.Construction')
 
       const dennis = game.getPlayerByName('dennis')
-      const dennisAchievements = game.getZoneByPlayer(dennis, 'achievements').cards.map(c => c.name)
+      const dennisAchievements = game.getZoneByPlayer(dennis, 'achievements').cards().map(c => c.name)
       expect(dennisAchievements).toStrictEqual([])
     })
   })

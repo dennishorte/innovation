@@ -17,7 +17,7 @@ function Card() {
 
   this.dogmaImpl = [
     (game, player) => {
-      const revealed = game.aChooseCard(player, game.getZoneByPlayer(player, 'hand').cards)
+      const revealed = game.aChooseCard(player, game.getZoneByPlayer(player, 'hand').cards())
       if (revealed) {
         game
           .mReveal(player, revealed)
@@ -25,14 +25,14 @@ function Card() {
         // Take cards into hand
         game
           .getPlayerOpponents(player)
-          .flatMap(opp => game.getZoneByPlayer(opp, 'hand').cards)
+          .flatMap(opp => game.getZoneByPlayer(opp, 'hand').cards())
           .filter(card => card.color === revealed.color)
           .forEach(card => game.mTake(player, card))
 
         // Meld cards
         const cardsToMeld = game
           .getZoneByPlayer(player, 'hand')
-          .cards
+          .cards()
           .filter(card => card.color === revealed.color)
 
         game.aMeldMany(player, cardsToMeld)

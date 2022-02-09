@@ -32,7 +32,7 @@ function Card() {
     (game, player) => {
       const greenCount = game
         .getZoneByPlayer(player, 'green')
-        .cards
+        .cards()
         .length
 
       if (greenCount >= 10) {

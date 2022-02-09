@@ -53,7 +53,7 @@ function Card() {
             card = game.getCardData(card)
             const cards = game
               .getZoneScore(player)
-              .cards
+              .cards()
               .map(game.getCardData)
               .filter(c => c.age === card.age)
               .map(c => c.id)

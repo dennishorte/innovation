@@ -18,7 +18,7 @@ function Card() {
   this.dogmaImpl = [
     (game, player) => {
       const hand = game.getZoneByPlayer(player, 'hand')
-      if (hand.cards.length === 0) {
+      if (hand.cards().length === 0) {
         game.mLogNoEffect()
         return
       }
@@ -26,7 +26,7 @@ function Card() {
       const scoreAll = game.aYesNo(player, 'Score all cards from your hand?')
 
       if (scoreAll) {
-        game.aScoreMany(player, hand.cards)
+        game.aScoreMany(player, hand.cards())
       }
       else {
         game.mLogDoNothing(player)

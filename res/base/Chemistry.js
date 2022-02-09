@@ -26,7 +26,7 @@ function Card() {
       if (decision) {
         const age = game.getHighestTopAge(player) + 1
         game.aDrawAndScore(player, age)
-        game.aChooseAndReturn(player, game.getZoneByPlayer(player, 'score').cards)
+        game.aChooseAndReturn(player, game.getZoneByPlayer(player, 'score').cards())
       }
       else {
         game.mLogDoNothing(player)

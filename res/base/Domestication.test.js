@@ -14,8 +14,8 @@ describe('Domestication', () => {
     t.choose(game, request2, 'Experimentation')
 
     const dennis = game.getPlayerByName('dennis')
-    const dennisBlue = game.getZoneByPlayer(dennis, 'blue').cards.map(c => c.id)
-    const dennisHand = game.getZoneByPlayer(dennis, 'hand').cards.map(c => c.age).sort()
+    const dennisBlue = game.getZoneByPlayer(dennis, 'blue').cards().map(c => c.id)
+    const dennisHand = game.getZoneByPlayer(dennis, 'hand').cards().map(c => c.age).sort()
     expect(dennisBlue).toStrictEqual(['Experimentation'])
     expect(dennisHand).toStrictEqual([1,4])
   })
@@ -29,7 +29,7 @@ describe('Domestication', () => {
     const request2 = t.choose(game, request1, 'Dogma.Domestication')
 
     const dennis = game.getPlayerByName('dennis')
-    const dennisHand = game.getZoneByPlayer(dennis, 'hand').cards.map(c => c.age).sort()
+    const dennisHand = game.getZoneByPlayer(dennis, 'hand').cards().map(c => c.age).sort()
     expect(dennisHand).toStrictEqual([1])
   })
 })

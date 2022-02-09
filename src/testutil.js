@@ -177,7 +177,7 @@ TestUtil.dennis = function(game) {
 }
 
 TestUtil.cards = function(game, zoneName, playerName='dennis') {
-  return TestUtil.zone(game, zoneName, playerName).cards.map(c => c.name)
+  return TestUtil.zone(game, zoneName, playerName).cards().map(c => c.name)
 }
 
 TestUtil.zone = function(game, zoneName, playerName='dennis') {
@@ -217,8 +217,7 @@ TestUtil.choose = function(game, request, ...selections) {
 TestUtil.clearZone = function(game, playerName, zoneName) {
   const player = game.getPlayerByName(playerName)
   const zone = game.getZoneByPlayer(player, zoneName)
-  const cards = [...zone.cards]
-  for (const card of cards) {
+  for (const card of zone.cards()) {
     game.mReturn(player, card, { silent: true })
   }
 }
@@ -227,8 +226,7 @@ TestUtil.clearBoard = function(game, playerName) {
   const player = game.getPlayerByName(playerName)
   for (const color of game.utilColors()) {
     const zone = game.getZoneByPlayer(player, color)
-    const cards = [...zone.cards]
-    for (const card of cards) {
+    for (const card of zone.cards()) {
       game.mReturn(player, card, { silent: true })
     }
   }
@@ -242,7 +240,7 @@ TestUtil.clearBoards = function(game) {
 
 TestUtil.clearHand = function(game, playerName) {
   const player = game.getPlayerByName(playerName)
-  const cards = [...game.getZoneByPlayer(player, 'hand').cards]
+  const cards = game.getZoneByPlayer(player, 'hand').cards()
   for (const card of cards) {
     game.mMoveCardTo(card, game.getZoneById(card.home))
   }
@@ -266,7 +264,7 @@ TestUtil.setAchievements = function(game, playerName, cardNames) {
   const player = game.getPlayerByName(playerName)
   const zone = game.getZoneByPlayer(player, 'achievements')
   const cards = cardNames.map(name => game.getCardByName(name))
-  for (const card of [...zone.cards]) {
+  for (const card of zone.cards()) {
     game.mReturn(player, card, { silent: true })
   }
   for (const card of cards) {
@@ -278,7 +276,7 @@ TestUtil.setAvailableAchievements = function(game, cardNames) {
   const cards = cardNames.map(name => game.getCardByName(name))
   const zone = game.getZoneById('achievements')
 
-  for (const card of [...zone.cards]) {
+  for (const card of zone.cards()) {
     if (!card.isSpecialAchievement) {
       game.mMoveCardTo(card, game.getZoneById(card.home))
     }
@@ -293,7 +291,7 @@ TestUtil.setColor = function(game, playerName, colorName, cardNames) {
   const player = game.getPlayerByName(playerName)
   const zone = game.getZoneByPlayer(player, colorName)
   const cards = cardNames.map(name => game.getCardByName(name))
-  for (const card of [...zone.cards]) {
+  for (const card of zone.cards()) {
     game.mReturn(player, card, { silent: true })
   }
   for (const card of cards) {
@@ -371,7 +369,7 @@ function _dumpZonesRecursive(root, indent=0) {
 
   if (root.id) {
     output.push(root.id)
-    for (const card of root.cards) {
+    for (const card of root.cards()) {
       output.push(`   ${card.id}`)
     }
   }

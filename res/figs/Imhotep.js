@@ -39,7 +39,7 @@ function Card() {
       checkApplies(game, player, { card }) {
         card = game.getCardData(card)
         const zone = game.getZoneColorByPlayer(player, card.color)
-        return zone.splay === 'none' && zone.cards.length > 1
+        return zone.splay === 'none' && zone.cards().length > 1
       },
       steps: [
         {

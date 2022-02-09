@@ -25,8 +25,8 @@ function Card() {
         })
         const hand = game.getZoneByPlayer(player, 'hand')
         const score = game.getZoneByPlayer(player, 'score')
-        const handHighest = highest(hand.cards)
-        const scoreHighest = highest(score.cards)
+        const handHighest = highest(hand.cards())
+        const scoreHighest = highest(score.cards())
 
         handHighest.forEach(card => game.mMoveCardTo(card, score))
         scoreHighest.forEach(card => game.mMoveCardTo(card, hand))

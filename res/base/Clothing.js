@@ -24,7 +24,7 @@ function Card() {
 
       const choices = game
         .getZoneByPlayer(player, 'hand')
-        .cards
+        .cards()
         .filter(card => !usedColors.includes(card.color))
 
       game.aChooseAndMeld(player, choices)

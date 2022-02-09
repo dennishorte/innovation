@@ -21,7 +21,7 @@ function Card() {
 
       const sortedHand = game
         .getZoneByPlayer(player, 'hand')
-        .cards
+        .cards()
         .sort((l, r) => r.age - l.age)
       const highest = sortedHand[0].age
       const choices = sortedHand

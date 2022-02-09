@@ -23,7 +23,7 @@ function Card() {
 
       const choices = game
         .getZoneByPlayer(player, 'hand')
-        .cards
+        .cards()
         .filter(card => boardColors.includes(card.color))
 
       const cards = game.aChooseAndTuck(player, choices, { min: 0, max: 1 })

@@ -18,7 +18,7 @@ function Card() {
   this.dogmaImpl = []
   this.echoImpl = []
   this.inspireImpl = (game, player) => {
-    game.aChooseAndScore(player, game.getZoneByPlayer(player, 'hand').cards)
+    game.aChooseAndScore(player, game.getZoneByPlayer(player, 'hand').cards())
   }
   this.karmaImpl = [
     {

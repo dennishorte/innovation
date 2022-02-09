@@ -30,7 +30,7 @@ function Card() {
       const card = game.aChooseCard(player, game.getTopCards(player))
       if (card) {
         for (let i = 0; i < 2; i++) {
-          const toScore = game.getZoneByPlayer(player, card.color).cards[0]
+          const toScore = game.getZoneByPlayer(player, card.color).cards()[0]
           if (toScore) {
             game.aScore(player, toScore)
           }

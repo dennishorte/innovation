@@ -23,7 +23,7 @@ function Card() {
     (game, player) => {
       const choices = game
         .getZoneByPlayer(player, 'hand')
-        .cards
+        .cards()
         .map(c => c.name)
 
       game.aChooseAndScore(player, choices, { min: 0, max: 1 })

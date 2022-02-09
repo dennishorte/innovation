@@ -17,7 +17,7 @@ function Card() {
 
   this.dogmaImpl = [
     (game, player) => {
-      const cardsInHand = game.getZoneByPlayer(player, 'hand').cards.map(c => c.name)
+      const cardsInHand = game.getZoneByPlayer(player, 'hand').cards().map(c => c.name)
       const returned = game.requestInputSingle({
         actor: player.name,
         title: 'Choose a Card',

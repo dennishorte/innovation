@@ -32,7 +32,7 @@ function Card() {
           description: 'If either of the drawn cards is purple, return them.',
           func(context, player) {
             const { game } = context
-            const drawnCards = context.sentBack.cards.map(game.getCardData)
+            const drawnCards = context.sentBack.cards().map(game.getCardData)
             const drewPurple = drawnCards.some(c => c.color === 'purple')
 
             if (drewPurple) {
@@ -75,7 +75,7 @@ function Card() {
       trigger: 'calculate-biscuits',
       func(game, player, boardBiscuits) {
         const biscuits = game.utilEmptyBiscuits()
-        biscuits.i = game.getHand(player).cards.length * 2
+        biscuits.i = game.getHand(player).cards().length * 2
         return biscuits
       }
     },

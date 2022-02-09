@@ -19,11 +19,11 @@ function Card() {
     (game, player) => {
       const scoreCount = game
         .getZoneByPlayer(player, 'score')
-        .cards
+        .cards()
         .length
       const handCount = game
         .getZoneByPlayer(player, 'hand')
-        .cards
+        .cards()
         .length
 
       if (scoreCount > handCount) {

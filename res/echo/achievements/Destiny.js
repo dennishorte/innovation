@@ -6,6 +6,6 @@ module.exports = function() {
   this.alt = 'Barometer'
   this.isSpecialAchievement = true
   this.checkPlayerIsEligible = function(game, player) {
-    return game.getZoneByPlayer(player, 'forecast').cards.length >= 7
+    return game.getZoneByPlayer(player, 'forecast').cards().length >= 7
   }
 }

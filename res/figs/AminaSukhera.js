@@ -21,7 +21,7 @@ function Card() {
   this.inspireImpl = (game, player) => {
     const cards = game
       .getPlayerAll()
-      .map(p => game.getZoneByPlayer(p, 'purple').cards.slice(-1)[0])
+      .map(p => game.getZoneByPlayer(p, 'purple').cards().slice(-1)[0])
       .filter(card => card !== undefined)
     game.aScoreMany(player, cards)
   }

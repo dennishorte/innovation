@@ -21,7 +21,7 @@ function Card() {
       // Choose two cards
       const playerHand = game
         .getZoneByPlayer(player, 'hand')
-        .cards
+        .cards()
         .map(c => c.name)
       const cards = game
         .requestInputSingle({

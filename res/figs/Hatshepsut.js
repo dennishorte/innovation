@@ -39,7 +39,7 @@ function Card() {
       checkApplies(game, player, { age }) {
         const hasOneInHand = game
           .getHand(player)
-          .cards
+          .cards()
           .map(game.getCardData)
           .filter(c => c.age === 1)
           .length > 0
@@ -51,7 +51,7 @@ function Card() {
           description: 'Return all cards from your hand.',
           func(context, player) {
             const { game } = context
-            return game.aReturnMany(context, player, game.getHand(player).cards)
+            return game.aReturnMany(context, player, game.getHand(player).cards())
           },
         },
         {

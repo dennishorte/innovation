@@ -25,9 +25,9 @@ function Card() {
         })
         const hand = game.getZoneByPlayer(player, 'hand')
         const score = game.getZoneByPlayer(player, 'score')
-        const tmp = hand.cards
-        hand.cards = score.cards
-        score.cards = tmp
+        const tmp = hand.cards()
+        hand._cards = score.cards()
+        score._cards = tmp
       }
       else {
         game.mLogDoNothing(player)

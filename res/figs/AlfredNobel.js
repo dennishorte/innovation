@@ -20,7 +20,7 @@ function Card() {
   this.inspireImpl = (game, player) => {
     const choices = game
       .getZoneByPlayer(player, 'hand')
-      .cards
+      .cards()
     game.aChooseAndScore(player, choices)
   }
   this.karmaImpl = [

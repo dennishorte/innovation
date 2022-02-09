@@ -19,13 +19,13 @@ function Card() {
   this.dogmaImpl = [
     (game, player, { biscuits, leader }) => {
       const count = Math.floor(biscuits[leader.name].c / 4)
-      const choices = game.getZoneByPlayer(player, 'score').cards
+      const choices = game.getZoneByPlayer(player, 'score').cards()
       const target = game.getZoneByPlayer(leader, 'score')
       game.aChooseAndTransfer(player, choices, target, { count })
     },
 
     (game, player) => {
-      const red = game.getZoneByPlayer(player, 'red').cards
+      const red = game.getZoneByPlayer(player, 'red').cards()
       if (red.length === 0) {
         game.mLogNoEffect()
       }
