@@ -421,10 +421,11 @@ Innovation.prototype.endTurn = function() {
 ////////////////////////////////////////////////////////////////////////////////
 // Actions
 
-Innovation.prototype.aAchieveAction = function(player, arg) {
+Innovation.prototype.aAchieveAction = function(player, arg, opts={}) {
   if (arg.startsWith('age ')) {
     const age = parseInt(arg.slice(4))
-    this.aClaimAchievement(player, { age, isStandard: true })
+    const isStandard = opts.nonAction ? false : true
+    this.aClaimAchievement(player, { age, isStandard })
   }
   else {
     const card = this.getCardByName(arg)
@@ -1497,7 +1498,7 @@ Innovation.prototype.getScoreDetails = function(player) {
     .map(info => ({ name: info.card.name, points: this.aCardEffect(player, info) }))
 
   details.scorePoints = details.score.reduce((l, r) => l + r, 0)
-  details.bonusPoints = (details.bonuses[0] || 0) + (details.bonuses.length - 1)
+  details.bonusPoints = (details.bonuses[0] || 0) + Math.max(details.bonuses.length - 1, 0)
   details.karmaPoints = details.karma.reduce((l, r) => l + r.points, 0)
   details.total = details.scorePoints + details.bonusPoints + details.karmaPoints
 
@@ -2076,8 +2077,7 @@ Innovation.prototype.getScoreCost = function(player, card) {
   return card.age * 5 * (sameAge.length + 1) - karmaAdjustment
 }
 
-Innovation.prototype._generateActionChoicesAchieve = function() {
-  const player = this.getPlayerCurrent()
+Innovation.prototype.getEligibleAchievementsRaw = function(player) {
   const playerScore = this.getScore(player)
   const topCardAge = this.getHighestTopAge(player)
   const achievementsZone = this
@@ -2095,6 +2095,12 @@ Innovation.prototype._generateActionChoicesAchieve = function() {
       const ageRequirement = card.age <= topCardAge
       return ageRequirement && this.checkScoreRequirement(player, card)
     })
+
+  return eligible
+}
+
+Innovation.prototype.formatAchievements = function(array) {
+  return array
     .map(ach => {
       if (ach.zone === 'achievements') {
         return `age ${ach.age}`
@@ -2104,11 +2110,20 @@ Innovation.prototype._generateActionChoicesAchieve = function() {
       }
     })
     .sort()
-  const distinct = util.array.distinct(eligible).sort()
+}
+
+Innovation.prototype.getEligibleAchievements = function(player) {
+  const formatted = this.formatAchievements(this.getEligibleAchievementsRaw(player))
+  const distinct = util.array.distinct(formatted).sort()
+  return distinct
+}
+
+Innovation.prototype._generateActionChoicesAchieve = function() {
+  const player = this.getPlayerCurrent()
 
   return {
     name: 'Achieve',
-    choices: distinct
+    choices: this.getEligibleAchievements(player)
   }
 }
 

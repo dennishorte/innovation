@@ -296,7 +296,6 @@ describe('Innovation', () => {
         const request1 = game.run()
 
         expect(t.getChoices(request1, 'Achieve')).toStrictEqual([])
-
       })
 
       test('cost for third of same age is triple (part 2)', () => {
@@ -310,7 +309,6 @@ describe('Innovation', () => {
         const request1 = game.run()
 
         expect(t.getChoices(request1, 'Achieve')).toStrictEqual(['age 1'])
-
       })
 
       test('age restriction', () => {

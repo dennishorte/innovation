@@ -30,13 +30,18 @@ function Card() {
       kind: 'would-first',
       matches: () => true,
       func(game, player, { card }) {
-        const canClaim = game
-          .getZoneById('achievements')
-          .cards()
-          .filter(other => other.age === card.age)
-          .filter(other => game.checkScoreRequirement(player, other))
-        if (canClaim.length > 0) {
-          game.aClaimAchievement(player, { age: card.age })
+        const eligible = game
+          .getEligibleAchievementsRaw(player)
+          .filter(other => card.age === other.age)
+        const formatted = game.formatAchievements(eligible)
+
+        if (formatted.length > 0) {
+          const selected = game.requestInputSingle({
+            actor: player.name,
+            title: 'Choose Achievement',
+            choices: formatted,
+          })[0]
+          game.aAchieveAction(player, selected, { nonAction: true })
         }
         else {
           game.mLogNoEffect()
