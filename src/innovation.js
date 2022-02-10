@@ -918,14 +918,14 @@ Innovation.prototype.aDraw = function(player, opts={}) {
 Innovation.prototype.aDrawAndForeshadow = function(player, age, opts={}) {
   const card = this.aDraw(player, {...opts, age })
   if (card) {
-    return this.mForeshadow(player, card, opts)
+    return this.aForeshadow(player, card, opts)
   }
 }
 
 Innovation.prototype.aDrawAndMeld = function(player, age, opts={}) {
   const card = this.aDraw(player, {...opts, age })
   if (card) {
-    return this.mMeld(player, card, opts)
+    return this.aMeld(player, card, opts)
   }
 }
 
@@ -980,6 +980,15 @@ Innovation.prototype.aEndorse = function(player, color, opts={}) {
   this.mLogOutdent()
 }
 
+Innovation.prototype.aForeshadow = function(player, card, opts={}) {
+  const karmaKind = this.aKarma(player, 'foreshadow', { ...opts, card })
+  if (karmaKind === 'would-instead') {
+    return
+  }
+
+  return this.mForeshadow(player, card, opts)
+}
+
 Innovation.prototype.aInspire = function(player, color, opts={}) {
   this.mLog({
     template: '{player} inspires {color}',
@@ -1025,6 +1034,7 @@ Innovation.prototype._aKarmaHelper = function(player, infos, opts={}) {
   }
 
   const info = infos[0]
+  opts = { ...opts, owner: info.owner }
 
   this.mLog({
     template: '{card} karma: {text}',
@@ -1035,11 +1045,16 @@ Innovation.prototype._aKarmaHelper = function(player, infos, opts={}) {
   })
   this.mLogIndent()
   this._karmaIn()
-  this.aCardEffect(player, info, opts)
+  const result = this.aCardEffect(player, info, opts)
   this._karmaOut()
   this.mLogOutdent()
 
-  return info.impl.kind
+  if (info.impl.kind === 'variable') {
+    return result
+  }
+  else {
+    return info.impl.kind
+  }
 }
 
 Innovation.prototype.aKarma = function(player, kind, opts={}) {
@@ -1153,6 +1168,12 @@ Innovation.prototype.aTuck = function(player, card, opts={}) {
   }
 
   return this.mTuck(player, card, opts)
+}
+
+Innovation.prototype.aTuckMany = function(player, cards, opts={}) {
+  for (const card of [...cards]) {
+    this.aTuck(player, card, opts)
+  }
 }
 
 Innovation.prototype.aYesNo = function(player, title) {
@@ -1333,9 +1354,21 @@ Innovation.prototype.getInfoByKarmaTrigger = function(player, trigger) {
   if (this.checkInKarma()) {
     return []
   }
-  return this
+
+  const global = this
+    .getPlayerOpponents(player)
+    .flatMap(opp => this.getTopCards(opp))
+    .flatMap(card => card.getKarmaInfo(trigger))
+    .filter(info => info.impl.triggerAll)
+
+  const thisPlayer = this
     .getTopCards(player)
     .flatMap(card => card.getKarmaInfo(trigger))
+
+  const all = [...thisPlayer, ...global]
+    .map(info => ({ ...info, owner: this.getPlayerByCard(info.card) }))
+
+  return all
 }
 
 Innovation.prototype.getExpansionList = function() {
@@ -1384,6 +1417,11 @@ Innovation.prototype.getNumAchievementsToWin = function() {
 
 Innovation.prototype.getPlayerAll = function() {
   return this.state.players
+}
+
+Innovation.prototype.getPlayerByCard = function(card) {
+  const zone = this.getZoneById(card.zone)
+  return this.getPlayerByZone(zone)
 }
 
 Innovation.prototype.getPlayerCurrent = function() {
@@ -1803,7 +1841,7 @@ Innovation.prototype.mTake = function(player, card) {
 }
 
 Innovation.prototype.mTransfer = function(player, card, target) {
-  this.mMoveCardTo(card, target)
+  this.mMoveCardToTop(card, target)
   this.mLog({
     template: '{player} transfers {card} to {zone}',
     args: { player, card, zone: target }

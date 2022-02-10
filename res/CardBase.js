@@ -91,7 +91,7 @@ CardBase.prototype.getKarmaInfo = function(trigger) {
         card: this,
         index: i,
         text: this.karma[i],
-        impl: this.karmaImpl[i]
+        impl: this.karmaImpl[i],
       })
     }
   }
