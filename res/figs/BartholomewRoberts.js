@@ -17,8 +17,33 @@ function Card() {
 
   this.dogmaImpl = []
   this.echoImpl = []
-  this.inspireImpl = []
-  this.karmaImpl = []
+  this.inspireImpl = (game, player) => {
+    const choices = game
+      .getPlayerAll()
+      .flatMap(p => game.getTopCards(p))
+      .filter(card => card.biscuits.includes('k'))
+    game.aChooseAndScore(player, choices)
+  }
+  this.karmaImpl = [
+    {
+      trigger: 'score',
+      kind: 'would-first',
+      matches: () => true,
+      func(game, player, { card }) {
+        const canClaim = game
+          .getZoneById('achievements')
+          .cards()
+          .filter(other => other.age === card.age)
+          .filter(other => game.checkScoreRequirement(player, other))
+        if (canClaim.length > 0) {
+          game.aClaimAchievement(player, { age: card.age })
+        }
+        else {
+          game.mLogNoEffect()
+        }
+      }
+    }
+  ]
 }
 
 Card.prototype = Object.create(CardBase.prototype)

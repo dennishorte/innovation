@@ -1218,6 +1218,10 @@ Innovation.prototype.checkSameTeam = function(p1, p2) {
   return p1.team === p2.team
 }
 
+Innovation.prototype.checkScoreRequirement = function(player, card) {
+  return this.getScoreCost(player, card) <= this.getScore(player)
+}
+
 Innovation.prototype.checkZoneHasVisibleDogmaOrEcho = function(zone) {
   if (zone.cards().length === 0) {
     return false
@@ -1471,21 +1475,33 @@ Innovation.prototype.getResources = function() {
 }
 
 Innovation.prototype.getScore = function(player) {
-  const inScore = this
-    .getZoneByPlayer(player, 'score')
-    .cards()
-    .reduce((l, r) => l + r.age, 0)
+  return this.getScoreDetails(player).total
+}
 
-  // Bonuses
-  const bonuses = this.getBonuses(player)
-  const bonusPoints = (bonuses[0] || 1) + (bonuses.length - 1)
+Innovation.prototype.getScoreDetails = function(player) {
+  const details = {
+    score: [],
+    bonuses: [],
+    karma: [],
 
-  const karma = this
+    scorePoints: 0,
+    bonusPoints: 0,
+    karmaPoints: 0,
+    total: 0
+  }
+
+  details.score = this.getCardsByZone(player, 'score').map(card => card.age).sort()
+  details.bonuses = this.getBonuses(player)
+  details.karma = this
     .getInfoByKarmaTrigger(player, 'calculate-score')
-    .map(info => this.aCardEffect(player, info))
-    .reduce((l, r) => l + r, 0)
+    .map(info => ({ name: info.card.name, points: this.aCardEffect(player, info) }))
 
-  return inScore + bonusPoints + karma
+  details.scorePoints = details.score.reduce((l, r) => l + r, 0)
+  details.bonusPoints = (details.bonuses[0] || 0) + (details.bonuses.length - 1)
+  details.karmaPoints = details.karma.reduce((l, r) => l + r.points, 0)
+  details.total = details.scorePoints + details.bonusPoints + details.karmaPoints
+
+  return details
 }
 
 Innovation.prototype.getTopCard = function(player, color) {
@@ -2046,7 +2062,7 @@ Innovation.prototype._generateActionChoices = function() {
   return choices
 }
 
-Innovation.prototype._scoreCost = function(player, card) {
+Innovation.prototype.getScoreCost = function(player, card) {
   const sameAge = this
     .getZoneByPlayer(player, 'achievements')
     .cards()
@@ -2077,8 +2093,7 @@ Innovation.prototype._generateActionChoicesAchieve = function() {
     .flat()
     .filter(card => {
       const ageRequirement = card.age <= topCardAge
-      const scoreRequirement = this._scoreCost(player, card) <= playerScore
-      return ageRequirement && scoreRequirement
+      return ageRequirement && this.checkScoreRequirement(player, card)
     })
     .map(ach => {
       if (ach.zone === 'achievements') {

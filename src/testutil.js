@@ -161,7 +161,7 @@ TestUtil.testNoFade = function(cardName) {
 
 TestUtil.testZone = function(game, zoneName, expectedCards, opts={}) {
   const zoneCards = TestUtil.cards(game, zoneName, opts.player)
-  if (opts.sort) {
+  if (opts.sort || !game.utilColors().includes(zoneName)) {
     zoneCards.sort()
     expectedCards.sort()
   }
