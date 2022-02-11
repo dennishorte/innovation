@@ -196,7 +196,7 @@ TestUtil.setBoard = function(game, state) {
           TestUtil.setAchievements(game, name, playerBoard.achievements)
         }
 
-        if (playerBoard.forcast) {
+        if (playerBoard.forecast) {
           TestUtil.setForecast(game, name, playerBoard.forecast)
         }
 

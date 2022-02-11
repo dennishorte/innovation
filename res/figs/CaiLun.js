@@ -19,23 +19,23 @@ function Card() {
   this.dogmaImpl = []
   this.echoImpl = [
     (game, player) => {
-
+      game.aChooseAndSplay(player, null, 'left')
     }
   ]
   this.inspireImpl = []
   this.karmaImpl = [
     {
       trigger: 'achieve',
+      kind: 'would-first',
       matches: () => true,
-      func(game, player, { card }) {
-
-        return 'would-first'
+      func: (game, player) => {
+        game.aDrawAndForeshadow(player, game.getEffectAge(this, 3))
       }
     },
     {
       trigger: 'list-achievements',
       func(game, player) {
-
+        return game.getCardsByZone(player, 'forecast')
       }
     }
   ]

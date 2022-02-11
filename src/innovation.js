@@ -732,7 +732,7 @@ Innovation.prototype.aClaimAchievement = function(player, opts={}) {
     throw new Error(`Unable to find achievement given opts: ${JSON.stringify(opts)}`)
   }
 
-  const karmaKind = this.aKarma(player, 'achieve', opts)
+  const karmaKind = this.aKarma(player, 'achieve', { ...opts, card })
   if (karmaKind === 'would-instead') {
     return
   }
