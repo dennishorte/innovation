@@ -168,6 +168,116 @@ TestUtil.testZone = function(game, zoneName, expectedCards, opts={}) {
   expect(zoneCards).toStrictEqual(expectedCards)
 }
 
+TestUtil.setBoard = function(game, state) {
+  game.testSetBreakpoint('before-first-player', (game) => {
+    if (state.achievements) {
+      TestUtil.setAvailableAchievements(game, state.achievements)
+    }
+
+    for (const name of ['dennis', 'micah', 'scott', 'eliya']) {
+      const playerBoard = state[name]
+      if (playerBoard) {
+        for (const color of game.utilColors()) {
+          if (playerBoard[color]) {
+            const cards = playerBoard[color].cards || playerBoard[color]
+            TestUtil.setColor(game, name, color, cards)
+
+            if (playerBoard[color].splay) {
+              TestUtil.setSplay(game, name, color, playerBoard[color].splay)
+            }
+          }
+        }
+
+        if (playerBoard.score) {
+          TestUtil.setScore(game, name, playerBoard.score)
+        }
+
+        if (playerBoard.achievements) {
+          TestUtil.setAchievements(game, name, playerBoard.achievements)
+        }
+
+        if (playerBoard.forcast) {
+          TestUtil.setForecast(game, name, playerBoard.forecast)
+        }
+
+        if (playerBoard.hand) {
+          TestUtil.setHand(game, name, playerBoard.hand)
+        }
+      }
+    }
+
+    const decks = state.decks || {}
+    for (const exp of Object.keys(decks)) {
+      for (const [age, cards] of Object.entries(decks[exp])) {
+        TestUtil.setDeckTop(game, exp, parseInt(age), cards)
+      }
+    }
+  })
+}
+
+function _blankTableau() {
+  return {
+    hand: [],
+    achievements: [],
+    score: [],
+    forecast: [],
+    red: [],
+    yellow: [],
+    green: [],
+    blue: [],
+    purple: [],
+  }
+}
+
+function _buildPlayerBoard(game, opts) {
+  const playerBoard = Object.assign(_blankTableau(), opts)
+
+  for (const color of game.utilColors()) {
+    if (Array.isArray(playerBoard[color])) {
+      playerBoard[color] = {
+        cards: playerBoard[color],
+        splay: 'none'
+      }
+    }
+  }
+
+  for (const zone of ['hand', 'score', 'forecast', 'achievements']) {
+    playerBoard[zone].sort()
+  }
+
+  return playerBoard
+}
+
+TestUtil.testBoard = function(game, state) {
+  const expected = {}
+  const real = {}
+
+  for (const player of game.getPlayerAll()) {
+    const expectedBoard = _buildPlayerBoard(game, state[player.name])
+    const realBoard = _blankTableau()
+
+    for (const color of game.utilColors()) {
+      const zone = game.getZoneByPlayer(player, color)
+      const cards = zone.cards().map(card => card.name)
+      realBoard[color] = {
+        cards,
+        splay: zone.splay
+      }
+    }
+
+    for (const zone of ['hand', 'score', 'forecast', 'achievements']) {
+      realBoard[zone] = game.getCardsByZone(player, zone).map(c => c.name).sort()
+    }
+
+    expected[player.name] = expectedBoard
+    real[player.name] = realBoard
+  }
+
+  expect(real).toStrictEqual(expected)
+}
+
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Data Shortcuts

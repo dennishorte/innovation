@@ -33,19 +33,8 @@ function Card() {
         const eligible = game
           .getEligibleAchievementsRaw(player)
           .filter(other => card.age === other.age)
-        const formatted = game.formatAchievements(eligible)
 
-        if (formatted.length > 0) {
-          const selected = game.requestInputSingle({
-            actor: player.name,
-            title: 'Choose Achievement',
-            choices: formatted,
-          })[0]
-          game.aAchieveAction(player, selected, { nonAction: true })
-        }
-        else {
-          game.mLogNoEffect()
-        }
+        game.aChooseAndAchieve(player, eligible, { nonAction: true })
       }
     }
   ]

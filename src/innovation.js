@@ -556,6 +556,29 @@ Innovation.prototype.aChoosePlayer = function(player, choices, opts) {
   }
 }
 
+Innovation.prototype.aChooseAndAchieve = function(player, choices, opts={}) {
+  if (choices.length === 0) {
+    this.mLogNoEffect()
+  }
+
+  if (typeof choices[0] === 'object') {
+    choices = this.formatAchievements(choices)
+  }
+
+  const selected = this.requestInputSingle({
+    actor: player.name,
+    title: 'Choose Achievement',
+    choices,
+  })
+
+  if (selected.length === 0) {
+    this.mLogDoNothing(player)
+  }
+  else {
+    this.aAchieveAction(player, selected[0], opts)
+  }
+}
+
 Innovation.prototype.aChooseAndMeld = function(player, cards, opts={}) {
   const cardNames = this.requestInputSingle({
     actor: player.name,
@@ -1037,6 +1060,16 @@ Innovation.prototype._aKarmaHelper = function(player, infos, opts={}) {
   const info = infos[0]
   opts = { ...opts, owner: info.owner }
 
+  if (info.impl.kind && info.impl.kind.startsWith('would')) {
+    this.mLog({
+      template: '{player} would {trigger} {card}, triggering...',
+      args: {
+        player,
+        trigger: opts.trigger,
+        card: opts.card,
+      }
+    })
+  }
   this.mLog({
     template: '{card} karma: {text}',
     args: {
@@ -1062,7 +1095,7 @@ Innovation.prototype.aKarma = function(player, kind, opts={}) {
   const infos = this
     .getInfoByKarmaTrigger(player, kind)
     .filter(info => info.impl.matches && info.impl.matches(this, player, opts))
-  return this._aKarmaHelper(player, infos, opts)
+  return this._aKarmaHelper(player, infos, { ...opts, trigger: kind })
 }
 
 Innovation.prototype.aKarmaWhenMeld = function(player, card, opts={}) {
@@ -2077,7 +2110,7 @@ Innovation.prototype.getScoreCost = function(player, card) {
   return card.age * 5 * (sameAge.length + 1) - karmaAdjustment
 }
 
-Innovation.prototype.getEligibleAchievementsRaw = function(player) {
+Innovation.prototype.getEligibleAchievementsRaw = function(player, opts={}) {
   const playerScore = this.getScore(player)
   const topCardAge = this.getHighestTopAge(player)
   const achievementsZone = this
@@ -2092,8 +2125,9 @@ Innovation.prototype.getEligibleAchievementsRaw = function(player) {
   const eligible = [achievementsZone, fromKarma]
     .flat()
     .filter(card => {
-      const ageRequirement = card.age <= topCardAge
-      return ageRequirement && this.checkScoreRequirement(player, card)
+      const ageRequirement = opts.ignoreAge || card.age <= topCardAge
+      const scoreRequirement = opts.ignoreScore || this.checkScoreRequirement(player, card)
+      return ageRequirement && scoreRequirement
     })
 
   return eligible
@@ -2112,8 +2146,8 @@ Innovation.prototype.formatAchievements = function(array) {
     .sort()
 }
 
-Innovation.prototype.getEligibleAchievements = function(player) {
-  const formatted = this.formatAchievements(this.getEligibleAchievementsRaw(player))
+Innovation.prototype.getEligibleAchievements = function(player, opts={}) {
+  const formatted = this.formatAchievements(this.getEligibleAchievementsRaw(player, opts))
   const distinct = util.array.distinct(formatted).sort()
   return distinct
 }
