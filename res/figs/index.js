@@ -61,7 +61,7 @@ const cards = [
   require('./Tecumseh.js'),
   require('./NapoleonBonaparte.js'),
   require('./CatherinetheGreat.js'),
-  require('./BenjanminFranklin.js'),
+  require('./BenjaminFranklin.js'),
   require('./CarlFriedrichGauss.js'),
   require('./EdwardJenner.js'),
   require('./GeorgeStephenson.js'),
