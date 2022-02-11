@@ -1172,7 +1172,7 @@ Innovation.prototype.aScoreMany = function(player, cards, opts={}) {
 Innovation.prototype.aSplay = function(player, color, direction, opts={}) {
   util.assert(direction, 'No direction specified for splay')
 
-  const karmaKind = this.aKarma(player, 'transfer', { ...opts, color, direction })
+  const karmaKind = this.aKarma(player, 'splay', { ...opts, color, direction })
   if (karmaKind === 'would-instead') {
     return
   }
