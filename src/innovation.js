@@ -1065,14 +1065,25 @@ Innovation.prototype._aKarmaHelper = function(player, infos, opts={}) {
   opts = { ...opts, owner: info.owner }
 
   if (info.impl.kind && info.impl.kind.startsWith('would')) {
-    this.mLog({
-      template: '{player} would {trigger} {card}, triggering...',
-      args: {
-        player,
-        trigger: opts.trigger,
-        card: opts.card,
-      }
-    })
+    if (opts.trigger === 'splay') {
+      this.mLog({
+        template: '{player} would splay {color}, triggering...',
+        args: {
+          player,
+          color: opts.direction
+        }
+      })
+    }
+    else {
+      this.mLog({
+        template: '{player} would {trigger} {card}, triggering...',
+        args: {
+          player,
+          trigger: opts.trigger,
+          card: opts.card,
+        }
+      })
+    }
   }
   this.mLog({
     template: '{card} karma: {text}',

@@ -1,3 +1,4 @@
+const { GameOverEvent } = require('./game.js')
 const { InnovationFactory } = require('./innovation.js')
 const log = require('./log.js')
 
@@ -276,7 +277,11 @@ TestUtil.testBoard = function(game, state) {
   expect(real).toStrictEqual(expected)
 }
 
-
+TestUtil.testGameOver = function(request, playerName, reason) {
+  expect(request).toEqual(expect.any(GameOverEvent))
+  expect(request.data.player.name).toBe(playerName)
+  expect(request.data.reason).toBe(reason)
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
