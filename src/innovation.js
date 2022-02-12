@@ -622,6 +622,11 @@ Innovation.prototype.aChooseAndReturn = function(player, cards, opts={}) {
 }
 
 Innovation.prototype.aChooseAndScore = function(player, cards, opts={}) {
+  if (cards.length === 0) {
+    this.mLogNoEffect()
+    return
+  }
+
   const cardNames = this.requestInputSingle({
     actor: player.name,
     title: 'Choose a Card',
