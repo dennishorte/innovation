@@ -552,10 +552,25 @@ Innovation.prototype.aChooseCards = function(player, cards, opts) {
     return undefined
   }
 
+  const choiceMap = cards.map(card => {
+    if (!card.id) {
+      card = this.getCardByName(card)
+    }
+
+    if (opts.hidden) {
+      return { name: this._getHiddenName(card), card }
+    }
+    else {
+      return { name: card.id, card }
+    }
+  })
+
+  const choices = choiceMap.map(x => x.name)
+
   const cardNames = this.requestInputSingle({
     actor: player.name,
     title: 'Choose a Card',
-    choices: cards.map(c => c.id || c),
+    choices,
     ...opts
   })
 
@@ -563,6 +578,17 @@ Innovation.prototype.aChooseCards = function(player, cards, opts) {
     this.mLogDoNothing(player)
     return undefined
   }
+
+  // Card names were hidden. Convert back to arbitrary matching cards.
+  else if (cardNames[0].startsWith('*')) {
+    const output = []
+    for (const name of cardNames) {
+      const mapping = choiceMap.find(m => m.name === name && !output.includes(m.card))
+      output.push(mapping.card)
+    }
+    return output
+  }
+
   else {
     return cardNames.map(name => this.getCardByName(name))
   }
@@ -1971,7 +1997,7 @@ Innovation.prototype.utilEnrichLogArgs = function(msg) {
         name = card.name
       }
       else {
-        const hiddenName = `*${card.expansion}${card.age}*`
+        const hiddenName = this._getHiddenName(card)
         name = card.visibility.includes(this.viewerName) ? card.name : hiddenName
       }
 
@@ -2048,7 +2074,9 @@ Innovation.prototype.utilSerializeObject = function(obj) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private functions
-
+Innovation.prototype._getHiddenName = function(card) {
+  return `*${card.expansion}-${card.age}*`
+}
 
 Innovation.prototype._adjustedDrawDeck = function(age, exp) {
   const baseDeck = this.getZoneByDeck('base', age)
