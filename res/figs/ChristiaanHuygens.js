@@ -16,9 +16,29 @@ function Card() {
   this.dogma = []
 
   this.dogmaImpl = []
-  this.echoImpl = []
+  this.echoImpl = (game, player) => {
+    const age = game.aChooseAge(player, [7,8,9,10])
+    game.aDrawAndForeshadow(player, age)
+  }
   this.inspireImpl = []
-  this.karmaImpl = []
+  this.karmaImpl = [
+    {
+      trigger: 'foreshadow',
+      kind: 'would-instead',
+      matches: () => true,
+      func: (game, player, { card }) => {
+        const biscuitCondition = card.biscuits.includes('i')
+        const ageCondition = card.age <= game.getHighestTopAge(player) + 2
+
+        if (biscuitCondition && ageCondition) {
+          game.aMeld(player, card)
+        }
+        else {
+          game.aForeshadow(player, card)
+        }
+      }
+    }
+  ]
 }
 
 Card.prototype = Object.create(CardBase.prototype)
