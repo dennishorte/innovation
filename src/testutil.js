@@ -283,6 +283,10 @@ TestUtil.testGameOver = function(request, playerName, reason) {
   expect(request.data.reason).toBe(reason)
 }
 
+TestUtil.testNotGameOver = function(request) {
+  expect(request).not.toEqual(expect.any(GameOverEvent))
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Data Shortcuts
