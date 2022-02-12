@@ -14,16 +14,18 @@ function Zone(game, name, kind) {
 }
 
 Zone.prototype.cards = function() {
-  if (this.name.endsWith('.score')) {
-    const karmaInfos = this.game.getInfoByKarmaTrigger(this.player(), 'list-score')
-    if (karmaInfos.length === 1) {
-      return karmaInfos[0].impl.func(this.game, this.player())
-    }
-    else if (karmaInfos.length > 1) {
-      throw new Error(`Multiple list-score karmas`)
-    }
-    else {
-      // Fall through
+  for (const zoneName of ['hand', 'forecast', 'score']) {
+    if (this.name.endsWith('.' + zoneName)) {
+      const karmaInfos = this.game.getInfoByKarmaTrigger(this.player(), `list-${zoneName}`)
+      if (karmaInfos.length === 1) {
+        return karmaInfos[0].impl.func(this.game, this.player())
+      }
+      else if (karmaInfos.length > 1) {
+        throw new Error(`Multiple list-${zoneName} karmas`)
+      }
+      else {
+        // Fall through
+      }
     }
   }
 
