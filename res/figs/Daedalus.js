@@ -17,19 +17,25 @@ function Card() {
   this.dogma = []
 
   this.dogmaImpl = []
-  this.echoImpl = []
+  this.echoImpl = (game, player) => {
+    game.aDrawAndForeshadow(player, game.getEffectAge(this, 4))
+  }
   this.inspireImpl = []
   this.karmaImpl = [
     {
-      trigger: 'calculate-elibibility',
-      func(player, game) {
-        console.log('not implemented')
+      trigger: 'calculate-eligibility',
+      reason: 'achieve',
+      func(game, player) {
+        return game.getCardsByZone(player, 'forecast').length
       },
     },
     {
       trigger: 'calculate-score',
-      func(player, game) {
-        console.log('not implemented')
+      func(game, player) {
+        return game
+          .getCardsByZone(player, 'achievements')
+          .filter(card => card.age !== undefined)
+          .reduce((l, r) => l + r.age, 0)
       }
     }
   ]

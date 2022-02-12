@@ -1433,9 +1433,17 @@ Innovation.prototype.getExpansionList = function() {
   return this.settings.expansions
 }
 
-Innovation.prototype.getHighestTopAge = function(player) {
+Innovation.prototype.getHighestTopAge = function(player, opts={}) {
   const card = this.getHighestTopCard(player)
-  return card ? card.age : 0
+  const baseAge = card ? card.age : 0
+
+  const karmaAdjustment = this
+    .getInfoByKarmaTrigger(player, 'calculate-eligibility')
+    .filter(info => info.impl.reason !== undefined)
+    .filter(info => info.impl.reason === 'all' || info.impl.reason === opts.reason)
+    .reduce((l, r) => l + r.impl.func(this, player), 0)
+
+  return baseAge + karmaAdjustment
 }
 
 Innovation.prototype.getHighestTopCard = function(player) {
@@ -2132,7 +2140,9 @@ Innovation.prototype.getScoreCost = function(player, card) {
 
 Innovation.prototype.getEligibleAchievementsRaw = function(player, opts={}) {
   const playerScore = this.getScore(player)
-  const topCardAge = this.getHighestTopAge(player)
+
+  const topCardAge = this.getHighestTopAge(player, { reason: 'achieve' })
+
   const achievementsZone = this
     .getZoneById('achievements')
     .cards()
