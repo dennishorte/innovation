@@ -36,6 +36,7 @@ describe('Daedalus', () => {
         score: ['Software', 'Robotics'],
         forecast: ['Tools', 'A.I.']
       },
+      achievements: ['The Wheel', 'Calendar', 'Engineering', 'Enterprise'],
     })
 
     const request1 = game.run()
