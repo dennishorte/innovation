@@ -546,6 +546,28 @@ Innovation.prototype.aChooseCard = function(player, cards, opts) {
   }
 }
 
+Innovation.prototype.aChooseCards = function(player, cards, opts) {
+  if (cards.length === 0) {
+    this.mLogNoEffect()
+    return undefined
+  }
+
+  const cardNames = this.requestInputSingle({
+    actor: player.name,
+    title: 'Choose a Card',
+    choices: cards.map(c => c.id || c),
+    ...opts
+  })
+
+  if (cardNames.length === 0) {
+    this.mLogDoNothing(player)
+    return undefined
+  }
+  else {
+    return cardNames.map(name => this.getCardByName(name))
+  }
+}
+
 Innovation.prototype.aChoosePlayer = function(player, choices, opts) {
   if (choices.length === 0) {
     this.mLogNoEffect()
@@ -590,74 +612,28 @@ Innovation.prototype.aChooseAndAchieve = function(player, choices, opts={}) {
   }
 }
 
-Innovation.prototype.aChooseAndMeld = function(player, cards, opts={}) {
-  if (cards.length === 0) {
-    this.mLogNoEffect()
-    return
+Innovation.prototype.aChooseAndMeld = function(player, choices, opts={}) {
+  const cards = this.aChooseCards(player, choices, opts)
+  if (cards) {
+    this.aMeldMany(player, cards, opts)
   }
-
-  const cardNames = this.requestInputSingle({
-    actor: player.name,
-    title: 'Choose a Card',
-    choices: cards.map(c => c.id || c),
-    ...opts
-  })
-  if (cardNames.length === 0) {
-    this.mLogDoNothing(player)
-  }
-  else {
-    cardNames
-      .map(c => this.getCardByName(c))
-      .forEach(card => this.aMeld(player, card))
-  }
+  return cards
 }
 
-Innovation.prototype.aChooseAndReturn = function(player, cards, opts={}) {
-  if (cards.length === 0) {
-    this.mLogNoEffect()
-    return
+Innovation.prototype.aChooseAndReturn = function(player, choices, opts={}) {
+  const cards = this.aChooseCards(player, choices, opts)
+  if (cards) {
+    this.aReturnMany(player, cards, opts)
   }
-
-  const cardNames = this.requestInputSingle({
-    actor: player.name,
-    title: 'Choose a Card',
-    choices: cards.map(c => c.id || c),
-    ...opts
-  })
-  if (cardNames.length === 0) {
-    this.mLogDoNothing(player)
-  }
-  else {
-    const cards = cardNames
-      .map(c => this.getCardByName(c))
-
-    cards
-      .forEach(card => this.aReturn(player, card))
-
-    return cards
-  }
+  return cards
 }
 
-Innovation.prototype.aChooseAndScore = function(player, cards, opts={}) {
-  if (cards.length === 0) {
-    this.mLogNoEffect()
-    return
+Innovation.prototype.aChooseAndScore = function(player, choices, opts={}) {
+  const cards = this.aChooseCards(player, choices, opts)
+  if (cards) {
+    this.aScoreMany(player, cards, opts)
   }
-
-  const cardNames = this.requestInputSingle({
-    actor: player.name,
-    title: 'Choose a Card',
-    choices: cards.map(c => c.id || c),
-    ...opts
-  })
-  if (cardNames.length === 0) {
-    this.mLogDoNothing(player)
-  }
-  else {
-    cardNames
-      .map(c => this.getCardByName(c))
-      .forEach(card => this.aScore(player, card))
-  }
+  return cards
 }
 
 Innovation.prototype.aChooseAndSplay = function(player, choices, direction, opts={}) {
@@ -696,60 +672,25 @@ Innovation.prototype.aChooseAndSplay = function(player, choices, direction, opts
   }
 }
 
-Innovation.prototype.aChooseAndTransfer = function(player, cards, target, opts={}) {
+Innovation.prototype.aChooseAndTransfer = function(player, choices, target, opts={}) {
+  const cards = this.aChooseCards(player, choices, opts)
+  if (cards) {
+    this.aTransferMany(player, cards, target, opts)
+  }
+  return cards
+
   if (cards.length === 0) {
     this.mLogNoEffect()
     return
-  }
-
-  const cardNames = this.requestInputSingle({
-    actor: player.name,
-    title: 'Choose Card(s)',
-    choices: cards.map(c => c.id || c),
-    ...opts
-  })
-  if (cardNames.length === 0) {
-    this.mLog({
-      template: '{player} does nothing',
-      args: { player }
-    })
-  }
-  else {
-    const toTransfer = cardNames
-      .map(c => this.getCardByName(c))
-
-    toTransfer
-      .forEach(card => this.aTransfer(player, card, target))
-
-    return toTransfer
   }
 }
 
-Innovation.prototype.aChooseAndTuck = function(player, cards, opts={}) {
-  if (cards.length === 0) {
-    this.mLogNoEffect()
-    return
+Innovation.prototype.aChooseAndTuck = function(player, choices, opts={}) {
+  const cards = this.aChooseCards(player, choices, opts)
+  if (cards) {
+    this.aTuckMany(player, cards, opts)
   }
-
-  const cardNames = this.requestInputSingle({
-    actor: player.name,
-    title: 'Choose a Card',
-    choices: cards.map(c => c.id || c),
-    ...opts
-  })
-  if (cardNames.length === 0) {
-    this.mLog({
-      template: '{player} does nothing',
-      args: { player }
-    })
-  }
-  else {
-    cardNames
-      .map(c => this.getCardByName(c))
-      .forEach(card => this.aTuck(player, card))
-
-    return cardNames.map(name => this.getCardByName(name))
-  }
+  return cards
 }
 
 Innovation.prototype.aClaimAchievement = function(player, opts={}) {

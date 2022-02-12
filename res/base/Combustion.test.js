@@ -14,8 +14,7 @@ describe('Combustion', () => {
     const result1 = game.run()
     const result2 = t.choose(game, result1, 'Dogma.Combustion')
 
-    expect(result2.selectors[0].actor).toBe('micah')
-    expect(result2.selectors[0].title).toBe('Choose Card(s)')
+    t.testChoices(result2, ['Tools', 'Calendar', 'Mathematics'])
     expect(result2.selectors[0].count).toBe(2)
 
     const result3 = t.choose(game, result2, 'Tools', 'Calendar')
