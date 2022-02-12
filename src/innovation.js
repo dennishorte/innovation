@@ -474,6 +474,13 @@ Innovation.prototype.aCardEffects = function(
 
         if (demand) {
           this.state.dogmaInfo.demanding = true
+
+          const karmaKind = this.aKarma(player, 'demand-success', { card })
+          if (karmaKind === 'would-instead') {
+            this.state.dogmaInfo.demanding = false
+            this.mLogOutdent()
+            return
+          }
         }
 
         this.aCardEffect(player, {
@@ -584,6 +591,11 @@ Innovation.prototype.aChooseAndAchieve = function(player, choices, opts={}) {
 }
 
 Innovation.prototype.aChooseAndMeld = function(player, cards, opts={}) {
+  if (cards.length === 0) {
+    this.mLogNoEffect()
+    return
+  }
+
   const cardNames = this.requestInputSingle({
     actor: player.name,
     title: 'Choose a Card',
@@ -601,6 +613,11 @@ Innovation.prototype.aChooseAndMeld = function(player, cards, opts={}) {
 }
 
 Innovation.prototype.aChooseAndReturn = function(player, cards, opts={}) {
+  if (cards.length === 0) {
+    this.mLogNoEffect()
+    return
+  }
+
   const cardNames = this.requestInputSingle({
     actor: player.name,
     title: 'Choose a Card',
@@ -680,6 +697,11 @@ Innovation.prototype.aChooseAndSplay = function(player, choices, direction, opts
 }
 
 Innovation.prototype.aChooseAndTransfer = function(player, cards, target, opts={}) {
+  if (cards.length === 0) {
+    this.mLogNoEffect()
+    return
+  }
+
   const cardNames = this.requestInputSingle({
     actor: player.name,
     title: 'Choose Card(s)',
@@ -704,6 +726,11 @@ Innovation.prototype.aChooseAndTransfer = function(player, cards, target, opts={
 }
 
 Innovation.prototype.aChooseAndTuck = function(player, cards, opts={}) {
+  if (cards.length === 0) {
+    this.mLogNoEffect()
+    return
+  }
+
   const cardNames = this.requestInputSingle({
     actor: player.name,
     title: 'Choose a Card',
