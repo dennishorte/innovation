@@ -26,7 +26,7 @@ function Card() {
       const target = game.getZoneByPlayer(leader, 'score')
       const transferredCards = game.aChooseAndTransfer(player, choices, target)
 
-      if (transferredCards) {
+      if (transferredCards.length > 0) {
         game.state.dogmaInfo.transferred = true
       }
     },

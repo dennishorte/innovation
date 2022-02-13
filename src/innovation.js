@@ -641,29 +641,22 @@ Innovation.prototype.aChooseAndAchieve = function(player, choices, opts={}) {
   }
 }
 
-Innovation.prototype.aChooseAndMeld = function(player, choices, opts={}) {
-  const cards = this.aChooseCards(player, choices, opts)
-  if (cards) {
-    this.aMeldMany(player, cards, opts)
+function ChooseAndFactory(manyFuncName) {
+  return function(player, choices, opts={}) {
+    const cards = this.aChooseCards(player, choices, opts)
+    if (cards) {
+      return this[manyFuncName](player, cards, opts)
+    }
+    else {
+      return []
+    }
   }
-  return cards
 }
 
-Innovation.prototype.aChooseAndReturn = function(player, choices, opts={}) {
-  const cards = this.aChooseCards(player, choices, opts)
-  if (cards) {
-    this.aReturnMany(player, cards, opts)
-  }
-  return cards
-}
-
-Innovation.prototype.aChooseAndScore = function(player, choices, opts={}) {
-  const cards = this.aChooseCards(player, choices, opts)
-  if (cards) {
-    this.aScoreMany(player, cards, opts)
-  }
-  return cards
-}
+Innovation.prototype.aChooseAndMeld = ChooseAndFactory('aMeldMany')
+Innovation.prototype.aChooseAndReturn = ChooseAndFactory('aReturnMany')
+Innovation.prototype.aChooseAndScore = ChooseAndFactory('aScoreMany')
+Innovation.prototype.aChooseAndTuck = ChooseAndFactory('aTuckMany')
 
 Innovation.prototype.aChooseAndSplay = function(player, choices, direction, opts={}) {
   util.assert(direction, 'No direction specified for splay')
@@ -704,22 +697,11 @@ Innovation.prototype.aChooseAndSplay = function(player, choices, direction, opts
 Innovation.prototype.aChooseAndTransfer = function(player, choices, target, opts={}) {
   const cards = this.aChooseCards(player, choices, opts)
   if (cards) {
-    this.aTransferMany(player, cards, target, opts)
+    return this.aTransferMany(player, cards, target, opts)
   }
-  return cards
-
-  if (cards.length === 0) {
-    this.mLogNoEffect()
-    return
+  else {
+    return []
   }
-}
-
-Innovation.prototype.aChooseAndTuck = function(player, choices, opts={}) {
-  const cards = this.aChooseCards(player, choices, opts)
-  if (cards) {
-    this.aTuckMany(player, cards, opts)
-  }
-  return cards
 }
 
 Innovation.prototype.aClaimAchievement = function(player, opts={}) {
