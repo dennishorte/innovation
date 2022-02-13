@@ -30,6 +30,7 @@ describe('Alchemy', () => {
     })
     const result1 = game.run()
     const result2 = t.choose(game, result1, 'Dogma.Alchemy')
+    const result3 = t.choose(game, result2, 'auto')
 
     expect(t.cards(game, 'hand')).toStrictEqual([])
   })

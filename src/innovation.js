@@ -541,6 +541,9 @@ Innovation.prototype.aChooseCard = function(player, cards, opts) {
     this.mLogDoNothing(player)
     return undefined
   }
+  else if (cardNames[0] === 'auto') {
+    return 'auto'
+  }
   else {
     return this.getCardByName(cardNames[0])
   }
@@ -1129,15 +1132,6 @@ Innovation.prototype.aMeld = function(player, card, opts={}) {
   return card
 }
 
-Innovation.prototype.aMeldMany = function(player, cards, opts={}) {
-  let remaining = [...cards]
-  while (remaining.length > 0) {
-    const next = this.aChooseCard(player, remaining)
-    remaining = remaining.filter(card => card !== next)
-    this.aMeld(player, next)
-  }
-}
-
 Innovation.prototype.aRemove = function(player, card, opts={}) {
   const karmaKind = this.aKarma(player, 'remove', { ...opts, card })
   if (karmaKind === 'would-instead') {
@@ -1145,12 +1139,6 @@ Innovation.prototype.aRemove = function(player, card, opts={}) {
   }
 
   return this.mRemove(player, card, opts)
-}
-
-Innovation.prototype.aRemoveMany = function(player, cards, opts={}) {
-  for (const card of [...cards]) {
-    this.aRemove(player, card, opts)
-  }
 }
 
 Innovation.prototype.aReturn = function(player, card, opts={}) {
@@ -1162,12 +1150,6 @@ Innovation.prototype.aReturn = function(player, card, opts={}) {
   return this.mReturn(player, card, opts)
 }
 
-Innovation.prototype.aReturnMany = function(player, cards, opts={}) {
-  for (const card of [...cards]) {
-    this.aReturn(player, card, opts)
-  }
-}
-
 Innovation.prototype.aScore = function(player, card, opts={}) {
   const karmaKind = this.aKarma(player, 'score', { ...opts, card })
   if (karmaKind === 'would-instead') {
@@ -1175,12 +1157,6 @@ Innovation.prototype.aScore = function(player, card, opts={}) {
   }
 
   return this.mScore(player, card, opts)
-}
-
-Innovation.prototype.aScoreMany = function(player, cards, opts={}) {
-  for (const card of [...cards]) {
-    this.aScore(player, card, opts)
-  }
 }
 
 Innovation.prototype.aSplay = function(player, color, direction, opts={}) {
@@ -1203,12 +1179,6 @@ Innovation.prototype.aTransfer = function(player, card, target, opts={}) {
   return this.mTransfer(player, card, target, opts)
 }
 
-Innovation.prototype.aTransferMany = function(player, cards, target, opts={}) {
-  for (const card of cards) {
-    this.aTransfer(player, card, target, opts)
-  }
-}
-
 Innovation.prototype.aTuck = function(player, card, opts={}) {
   const karmaKind = this.aKarma(player, 'tuck', { ...opts, card })
   if (karmaKind === 'would-instead') {
@@ -1216,12 +1186,6 @@ Innovation.prototype.aTuck = function(player, card, opts={}) {
   }
 
   return this.mTuck(player, card, opts)
-}
-
-Innovation.prototype.aTuckMany = function(player, cards, opts={}) {
-  for (const card of [...cards]) {
-    this.aTuck(player, card, opts)
-  }
 }
 
 Innovation.prototype.aYesNo = function(player, title) {
@@ -1233,6 +1197,42 @@ Innovation.prototype.aYesNo = function(player, title) {
 
   return result === 'yes'
 }
+
+function ManyFactory(baseFuncName) {
+  return function(player, cards, opts={}) {
+    const results = []
+    let remaining = [...cards]
+    let auto = false
+    while (remaining.length > 0) {
+      let next
+      if (auto || remaining.length === 1) {
+        next = remaining[0]
+      }
+      else {
+        next = this.aChooseCard(player, remaining.concat(['auto']))
+      }
+
+      if (next === 'auto') {
+        auto = true
+        continue
+      }
+
+      remaining = remaining.filter(card => card !== next)
+      const result = this[baseFuncName](player, next, opts)
+      if (result !== undefined) {
+        results.push(result)
+      }
+    }
+    return results
+  }
+}
+
+Innovation.prototype.aMeldMany = ManyFactory('aMeld')
+Innovation.prototype.aRemoveMany = ManyFactory('aRemove')
+Innovation.prototype.aReturnMany = ManyFactory('aReturn')
+Innovation.prototype.aScoreMany = ManyFactory('aScore')
+Innovation.prototype.aTransferMany = ManyFactory('aTransfer')
+Innovation.prototype.aTuckMany = ManyFactory('aTuck')
 
 
 ////////////////////////////////////////////////////////////////////////////////

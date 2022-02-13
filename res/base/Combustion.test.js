@@ -18,6 +18,7 @@ describe('Combustion', () => {
     expect(result2.selectors[0].count).toBe(2)
 
     const result3 = t.choose(game, result2, 'Tools', 'Calendar')
+    const result4 = t.choose(game, result3, 'auto')
 
     expect(t.cards(game, 'score').sort()).toStrictEqual(['Calendar', 'Tools'])
     expect(t.cards(game, 'score', 'micah')).toStrictEqual(['Mathematics'])
@@ -34,6 +35,7 @@ describe('Combustion', () => {
     const result1 = game.run()
     const result2 = t.choose(game, result1, 'Dogma.Combustion')
     const result3 = t.choose(game, result2, 'Tools', 'Calendar')
+    const result4 = t.choose(game, result3, 'auto')
 
     expect(t.cards(game, 'red')).toStrictEqual(['Combustion'])
     expect(game.getCardByName('Construction').zone).toBe('decks.base.2')

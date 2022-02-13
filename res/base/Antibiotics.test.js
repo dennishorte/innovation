@@ -50,6 +50,7 @@ describe('Antibiotics', () => {
     const result1 = game.run()
     const result2 = t.choose(game, result1, 'Dogma.Antibiotics')
     const result3 = t.choose(game, result2, 'Archery', 'Calendar', 'Mathematics')
+    const result4 = t.choose(game, result3, 'auto')
 
     expect(t.cards(game, 'hand', 'dennis').sort()).toStrictEqual([
       'Empiricism',

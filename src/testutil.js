@@ -125,7 +125,8 @@ TestUtil.testActionChoices = function(request, action, expected) {
 }
 
 TestUtil.testChoices = function(request, expected) {
-  expect(request.selectors[0].choices.sort()).toStrictEqual(expected.sort())
+  const choices = request.selectors[0].choices.filter(c => c !== 'auto').sort()
+  expect(choices).toStrictEqual(expected.sort())
 }
 
 TestUtil.testIsSecondPlayer = function(request) {

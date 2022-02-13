@@ -12,7 +12,7 @@ describe('Reformation', () => {
       })
       const request1 = game.run()
       const request2 = t.choose(game, request1, 'Dogma.Reformation')
-      t.choose(game, request2, 'no')
+      const request3 = t.choose(game, request2, 'no')
 
       expect(t.cards(game, 'green')).toStrictEqual(['Clothing'])
     })
@@ -27,6 +27,7 @@ describe('Reformation', () => {
       const request2 = t.choose(game, request1, 'Dogma.Reformation')
       const request3 = t.choose(game, request2, 'yes')
       const request4 = t.choose(game, request3, 'Mapmaking', 'Currency')
+      const request5 = t.choose(game, request4, 'auto')
 
       expect(t.cards(game, 'green')).toStrictEqual(['Clothing', 'Mapmaking', 'Currency'])
     })

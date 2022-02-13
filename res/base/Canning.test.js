@@ -16,7 +16,8 @@ describe('Canning', () => {
     const result1 = game.run()
     const result2 = t.choose(game, result1, 'Dogma.Canning')
     const result3 = t.choose(game, result2, 'yes')
-    const result4 = t.choose(game, result3, 'yellow')
+    const result4 = t.choose(game, result3, 'auto')
+    const result5 = t.choose(game, result4, 'yellow')
 
     expect(t.cards(game, 'score').sort()).toStrictEqual(['The Internet', 'The Wheel'])
     expect(t.cards(game, 'yellow').sort()).toStrictEqual(['Canning', 'Vaccination'])

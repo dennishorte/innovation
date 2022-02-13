@@ -67,6 +67,7 @@ describe('Augustus Caesar', () => {
     })
     const request1 = game.run()
     const request2 = t.choose(game, request1, 'Meld.The Wheel')
+    const request3 = t.choose(game, request2, 'auto')
 
     t.testZone(game, 'red', ['Archery', 'Construction'], { player: 'micah' })
     t.testZone(game, 'blue', ['Tools'], { player: 'micah' })

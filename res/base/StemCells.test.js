@@ -20,7 +20,8 @@ describe('Stem Cells', () => {
     })
     const request1 = game.run()
     const request2 = t.choose(game, request1, 'Dogma.Stem Cells')
-    t.choose(game, request2, 'yes')
+    const request3 = t.choose(game, request2, 'yes')
+    const request4 = t.choose(game, request3, 'auto')
 
     expect(t.cards(game, 'score').sort()).toStrictEqual(['Experimentation', 'Reformation'])
   })

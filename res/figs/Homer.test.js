@@ -20,6 +20,7 @@ describe('Homer', () => {
     })
     const result1 = game.run()
     const result2 = t.choose(game, result1, 'Decree.Trade')
+    const result3 = t.choose(game, result2, 'auto')
 
     expect(t.cards(game, 'red')).toStrictEqual(['Yi Sun-Sin'])
     expect(t.cards(game, 'yellow')).toStrictEqual(['Ximen Bao'])
