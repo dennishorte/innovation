@@ -1157,7 +1157,6 @@ Innovation.prototype.aTransfer = function(player, card, target, opts={}) {
   if (karmaKind === 'would-instead') {
     return
   }
-
   return this.mTransfer(player, card, target, opts)
 }
 
@@ -1181,7 +1180,10 @@ Innovation.prototype.aYesNo = function(player, title) {
 }
 
 function ManyFactory(baseFuncName) {
-  return function(player, cards, opts={}) {
+  return function(...args) { //player, cards, opts={}) {
+    const player = args[0]
+    const cards = args[1]
+
     const results = []
     let remaining = [...cards]
     let auto = false
@@ -1200,7 +1202,9 @@ function ManyFactory(baseFuncName) {
       }
 
       remaining = remaining.filter(card => card !== next)
-      const result = this[baseFuncName](player, next, opts)
+      const singleArgs = [...args]
+      singleArgs[1] = next
+      const result = this[baseFuncName](...singleArgs)
       if (result !== undefined) {
         results.push(result)
       }
