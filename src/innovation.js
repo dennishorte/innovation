@@ -843,6 +843,13 @@ Innovation.prototype.aDogmaHelper = function(player, card, opts) {
     this.aDraw(player, { exp: 'figs', share: true })
     this.mLogOutdent()
   }
+
+  // Grace Hopper has an "if your opponent didn't share" karma effect
+  else {
+    for (const other of this.getPlayerOpponents(player)) {
+      this.aKarma(other, 'no-share', { leader: player })
+    }
+  }
 }
 
 Innovation.prototype.aDogma = function(player, card, opts={}) {
@@ -1055,6 +1062,14 @@ Innovation.prototype._aKarmaHelper = function(player, infos, opts={}) {
         args: {
           player,
           color: opts.direction
+        }
+      })
+    }
+    else if (opts.trigger === 'no-share') {
+      this.mLog({
+        template: '{player} did not draw a sharing bonus, triggering...',
+        args: {
+          player,
         }
       })
     }
