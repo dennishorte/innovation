@@ -472,10 +472,17 @@ Innovation.prototype.aCardEffects = function(
         })
         this.mLogIndent()
 
+        const effectInfo = {
+          card,
+          text: effectText,
+          impl: effectImpl,
+          index: i,
+        }
+
         if (demand) {
           this.state.dogmaInfo.demanding = true
 
-          const karmaKind = this.aKarma(player, 'demand-success', { card })
+          const karmaKind = this.aKarma(player, 'demand-success', { card, effectInfo, leader })
           if (karmaKind === 'would-instead') {
             this.state.dogmaInfo.demanding = false
             this.mLogOutdent()
@@ -483,12 +490,7 @@ Innovation.prototype.aCardEffects = function(
           }
         }
 
-        this.aCardEffect(player, {
-          card,
-          text: effectText,
-          impl: effectImpl,
-          index: i,
-        }, {
+        this.aCardEffect(player, effectInfo, {
           biscuits,
           leader,
         })
