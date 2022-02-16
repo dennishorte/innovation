@@ -1075,6 +1075,14 @@ Innovation.prototype._aKarmaHelper = function(player, infos, opts={}) {
         }
       })
     }
+    else if (opts.trigger === 'draw') {
+      this.mLog({
+        template: '{player} would draw a card, triggering...',
+        args: {
+          player,
+        }
+      })
+    }
     else {
       this.mLog({
         template: '{player} would {trigger} {card}, triggering...',
