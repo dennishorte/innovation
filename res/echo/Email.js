@@ -1,4 +1,5 @@
 const CardBase = require(`../CardBase.js`)
+const util = require('../../src/util.js')
 
 function Card() {
   this.id = `Email`  // Card names are unique in Innovation
@@ -16,8 +17,28 @@ function Card() {
     `Execute all non-demand dogma effects on your lowest non-green top card. Do not share them.`
   ]
 
-  this.dogmaImpl = []
-  this.echoImpl = []
+  this.dogmaImpl = [
+    (game, player) => {
+      game.aDrawAndForeshadow(player, game.getEffectAge(this, 9))
+    },
+    (game, player) => {
+      const sortedCards = game
+        .getTopCards(player)
+        .filter(card => card.color !== 'green')
+        .sort((l, r) => l.age - r.age)
+      const lowest = util.array.takeWhile(sortedCards, card => card.age === sortedCards[0].age)
+      const card = game.aChooseCard(player, lowest)
+      if (card) {
+        game.aCardEffects(player, player, card, 'dogma', game.getBiscuitsByPlayer(player))
+      }
+      else {
+        game.mLogNoEffect()
+      }
+    }
+  ]
+  this.echoImpl = (game, player) => {
+    game.aDrawAndForeshadow(player, game.getEffectAge(this, 10))
+  }
   this.inspireImpl = []
   this.karmaImpl = []
 }
