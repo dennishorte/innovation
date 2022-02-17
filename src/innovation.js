@@ -32,7 +32,23 @@ Innovation.prototype._mainProgram = function() {
   this.firstPicks()
   this.mainLoop()
 }
+
 Innovation.prototype._gameOver = function(event) {
+  for (const player of this.getPlayerAll()) {
+    try {
+      this.state.wouldWinKarma = true
+      this.aKarma(player, 'would-win')
+    }
+    catch (e) {
+      if (e instanceof GameOverEvent) {
+        event = e
+      }
+      else {
+        throw e
+      }
+    }
+  }
+
   this.mLog({
     template: '{player} wins due to {reason}',
     args: {
@@ -68,6 +84,7 @@ Innovation.prototype.initializeTransientState = function() {
   this.state.turn = 1
   this.state.round = 1
   this.state.karmaDepth = 0
+  this.state.wouldWinKarma = false
 }
 
 Innovation.prototype.initializePlayers = function() {
@@ -1638,6 +1655,10 @@ Innovation.prototype.mAchievementCheck = function() {
 }
 
 Innovation.prototype.mAchievementVictoryCheck = function() {
+  if (this.state.wouldWinKarma) {
+    return
+  }
+
   for (const player of this.getPlayerAll()) {
     if (this.getAchievementsByPlayer(player).total >= this.getNumAchievementsToWin()) {
       throw new GameOverEvent({
