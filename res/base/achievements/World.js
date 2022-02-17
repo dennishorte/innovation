@@ -5,7 +5,8 @@ module.exports = function() {
   this.text = 'Have twelve {i} on your board.'
   this.alt = 'Translation'
   this.isSpecialAchievement = true
-  this.checkPlayerIsEligible = function(game, player) {
-    return game.getBiscuitsByPlayer(player).i >= 12
+  this.checkPlayerIsEligible = function(game, player, reduceCost) {
+    const targetInfo = reduceCost ? 11 : 12
+    return game.getBiscuitsByPlayer(player).i >= targetInfo
   }
 }

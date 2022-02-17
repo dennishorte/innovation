@@ -5,10 +5,16 @@ module.exports = function() {
   this.text = 'Have five colors splayed either up or right.'
   this.alt = 'Invention'
   this.isSpecialAchievement = true
-  this.checkPlayerIsEligible = function(game, player) {
-    return game
+  this.checkPlayerIsEligible = function(game, player, reduceCost) {
+    const numColors = reduceCost ? 4 : 5
+    const splays = game
       .utilColors()
       .map(c => game.getZoneByPlayer(player, c).splay)
-      .every(splay => splay === 'right' || splay === 'up')
+
+    const directionMatch = splays
+      .filter(splay => splay === 'right' || splay === 'up')
+      .length
+
+    return directionMatch >= numColors
   }
 }

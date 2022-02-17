@@ -5,7 +5,8 @@ module.exports = function() {
   this.text = 'Have eight visible hexes in one color.'
   this.alt = 'Loom'
   this.isSpecialAchievement = true
-  this.checkPlayerIsEligible = function(game, player) {
+  this.checkPlayerIsEligible = function(game, player, reduceCost) {
+    const targetCount = reduceCost ? 7 : 8
     return game
       // Grab each stack
       .utilColors()
@@ -17,6 +18,6 @@ module.exports = function() {
         .map(c => (game.getBiscuitsRaw(c, zone.splay).match(/h/g) || []).length )
         .reduce((prev, curr) => prev + curr, 0)
       )
-      .some(count => count >= 8)
+      .some(count => count >= targetCount)
   }
 }

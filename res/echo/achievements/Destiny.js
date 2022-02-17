@@ -5,7 +5,8 @@ module.exports = function() {
   this.text = 'Have seven cards forecasted'
   this.alt = 'Barometer'
   this.isSpecialAchievement = true
-  this.checkPlayerIsEligible = function(game, player) {
-    return game.getZoneByPlayer(player, 'forecast').cards().length >= 7
+  this.checkPlayerIsEligible = function(game, player, reduceCost) {
+    const targetCount = reduceCost ? 6 : 7
+    return game.getZoneByPlayer(player, 'forecast').cards().length >= targetCount
   }
 }

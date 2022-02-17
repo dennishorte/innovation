@@ -1618,8 +1618,12 @@ Innovation.prototype.getZoneByPlayer = function(player, name) {
 Innovation.prototype.mAchievementCheck = function() {
   const available = this.getZoneById('achievements').cards()
   for (const player of this.getPlayersStartingCurrent()) {
+    const reduceCost = this.getInfoByKarmaTrigger(
+      player,
+      'reduce-special-achievement-requirements'
+    ).length > 1
     for (const card of available) {
-      if (card.checkPlayerIsEligible && card.checkPlayerIsEligible(this, player)) {
+      if (card.checkPlayerIsEligible && card.checkPlayerIsEligible(this, player, reduceCost)) {
         // It is safe to return here. Claiming an achievement will retrigger this
         // function, allowing players to claim more than one achievement per turn.
         return this.aClaimAchievement(player, { card })
