@@ -876,7 +876,14 @@ Innovation.prototype.aDogma = function(player, card, opts={}) {
     template: '{player} activates the dogma effects of {card}',
     args: { player, card }
   })
+
   this.mLogIndent()
+
+  const karmaKind = this.aKarma(player, 'dogma', { ...opts, card })
+  if (karmaKind === 'would-instead') {
+    return
+  }
+
   this.aDogmaHelper(player, card, opts)
   this.mLogOutdent()
 }
@@ -1092,6 +1099,14 @@ Innovation.prototype._aKarmaHelper = function(player, infos, opts={}) {
     else if (opts.trigger === 'no-share') {
       this.mLog({
         template: '{player} did not draw a sharing bonus, triggering...',
+        args: {
+          player,
+        }
+      })
+    }
+    else if (opts.trigger === 'dogma') {
+      this.mLog({
+        template: '{player} would take a Dogma action, triggering...',
         args: {
           player,
         }
@@ -1421,14 +1436,20 @@ Innovation.prototype.getEffectAge = function(card, age) {
 
   const karmaInfos = this.getInfoByKarmaTrigger(player, 'effect-age')
   if (karmaInfos.length === 0) {
-    return age
+    age = age
   }
   else if (karmaInfos.length > 1) {
     throw new Error('Multiple effect-age karmas not supported')
   }
   else {
-    return karmaInfos[0].impl.func(this, player, card, age)
+    age = karmaInfos[0].impl.func(this, player, card, age)
   }
+
+  if (this.state.dogmaInfo.globalAgeIncrease) {
+    age += this.state.dogmaInfo.globalAgeIncrease
+  }
+
+  return age
 }
 
 Innovation.prototype.getInfoByKarmaTrigger = function(player, trigger) {
