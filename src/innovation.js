@@ -1020,6 +1020,11 @@ Innovation.prototype.aInspire = function(player, color, opts={}) {
   const zone = this.getZoneByPlayer(player, color)
   const biscuits = this.getBiscuits()
 
+  const karmaKind = this.aKarma(player, 'inspire', opts)
+  if (karmaKind === 'would-instead') {
+    return
+  }
+
   // Gather effects
   const effectCards = []
   for (const card of zone.cards().reverse()) {
