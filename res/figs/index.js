@@ -34,7 +34,7 @@ const cards = [
   require('./SuSong.js'),
   require('./Alhazen.js'),
   require('./AlKindi.js'),
-  require('./LeonardaDaVinci.js'),
+  require('./LeonardoDaVinci.js'),
   require('./CristopherColumbus.js'),
   require('./JohannesKepler.js'),
   require('./YiSunSin.js'),

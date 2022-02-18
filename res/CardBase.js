@@ -45,6 +45,12 @@ CardBase.prototype.checkHasBiscuit = function(biscuit) {
   return this.biscuits.includes(biscuit)
 }
 
+CardBase.prototype.checkHasBonus = function() {
+  const re = /[0-9ab]/gi
+  const match = this.biscuits.match(re)
+  return match !== null
+}
+
 CardBase.prototype.getBiscuits = function(splay) {
   if (splay === 'top') {
     return this.biscuits
