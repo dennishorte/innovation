@@ -519,28 +519,36 @@ Innovation.prototype.aCardEffects = function(
   }
 }
 
+Innovation.prototype.aChoose = function(player, choices, opts={}) {
+  if (choices.length === 0) {
+    this.mLogNoEffect()
+    return undefined
+  }
+
+  const selected = this.requestInputSingle({
+    actor: player.name,
+    title: opts.title || 'Choose',
+    choices: choices,
+    ...opts
+  })
+  if (selected.length === 0) {
+    this.mLogDoNothing(player)
+    return undefined
+  }
+  else {
+    return selected
+  }
+
+}
+
 Innovation.prototype.aChooseAge = function(player, ages, opts={}) {
   if (!ages) {
     ages = [1,2,3,4,5,6,7,8,9,10]
   }
 
-  if (ages.length === 0) {
-    this.mLogNoEffect()
-    return undefined
-  }
-
-  const chosenAges = this.requestInputSingle({
-    actor: player.name,
-    title: 'Choose Age',
-    choices: ages,
-    ...opts
-  })
-  if (chosenAges.length === 0) {
-    this.mLogDoNothing(player)
-    return undefined
-  }
-  else {
-    return chosenAges[0]
+  const selected = this.aChoose(player, ages, { ...opts, title: 'Choose Age' })
+  if (selected) {
+    return selected[0]
   }
 }
 
@@ -2196,11 +2204,7 @@ Innovation.prototype.getScoreCost = function(player, card) {
   return card.age * 5 * (sameAge.length + 1) - karmaAdjustment
 }
 
-Innovation.prototype.getEligibleAchievementsRaw = function(player, opts={}) {
-  const playerScore = this.getScore(player)
-
-  const topCardAge = this.getHighestTopAge(player, { reason: 'achieve' })
-
+Innovation.prototype.getAvailableAchievementsRaw = function(player) {
   const achievementsZone = this
     .getZoneById('achievements')
     .cards()
@@ -2210,15 +2214,19 @@ Innovation.prototype.getEligibleAchievementsRaw = function(player, opts={}) {
     .getInfoByKarmaTrigger(player, 'list-achievements')
     .flatMap(info => info.impl.func(this, player))
 
-  const eligible = [achievementsZone, fromKarma]
-    .flat()
-    .filter(card => {
+  return [achievementsZone, fromKarma].flat()
+}
+
+Innovation.prototype.getEligibleAchievementsRaw = function(player, opts={}) {
+  const playerScore = this.getScore(player)
+  const topCardAge = this.getHighestTopAge(player, { reason: 'achieve' })
+
+  return this.getAvailableAchievementsRaw(player, opts)
+             .filter(card => {
       const ageRequirement = opts.ignoreAge || card.age <= topCardAge
       const scoreRequirement = opts.ignoreScore || this.checkScoreRequirement(player, card)
       return ageRequirement && scoreRequirement
     })
-
-  return eligible
 }
 
 Innovation.prototype.formatAchievements = function(array) {
