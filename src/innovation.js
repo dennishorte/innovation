@@ -1323,6 +1323,11 @@ Innovation.prototype.checkEffectIsVisible = function(card) {
   }
 }
 
+Innovation.prototype.checkInspireIsVisible = function(card) {
+  const splay = this.checkCardIsTop(card) ? 'top' : this.getZoneByCard(card).splay
+  return card.checkInspireIsVisible(splay)
+}
+
 Innovation.prototype.checkInKarma = function() {
   return this.state.karmaDepth > 0
 }
