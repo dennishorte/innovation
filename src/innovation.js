@@ -2410,6 +2410,12 @@ Innovation.prototype._getBiscuitComparator = function(player, primaryBiscuit, bi
     if (adjustedBiscuit === 'score') {
       return this.getScore(other) >= this.getScore(player)
     }
+    else if (this.state.dogmaInfo.soleMajority === other) {
+      return true
+    }
+    else if (this.state.dogmaInfo.soleMajority === player) {
+      return false
+    }
     else {
       return biscuits[other.name][adjustedBiscuit] >= biscuits[player.name][adjustedBiscuit]
     }
