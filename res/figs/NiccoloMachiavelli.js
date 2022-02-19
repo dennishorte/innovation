@@ -18,13 +18,31 @@ function Card() {
   this.dogmaImpl = []
   this.echoImpl = [
     (game, player) => {
-
+      const choices = game
+        .utilColors()
+        .filter(color => game.getZoneByPlayer(player, color).splay === 'left')
+      game.aChooseAndSplay(player, choices, 'right', { count: 1 })
     }
   ]
   this.inspireImpl = []
   this.karmaImpl = [
     {
-      trigger: '',
+      trigger: 'extra-achievements',
+      func: (game, player) => {
+        const othersSplayedColors = game
+          .getPlayerAll()
+          .filter(other => other !== player)
+          .flatMap(other => {
+            return game
+              .utilColors()
+              .filter(color => game.getZoneByPlayer(other, color).splay !== 'none')
+          })
+        return game
+          .utilColors()
+          .filter(color => game.getZoneByPlayer(player, color).splay === 'right')
+          .filter(color => !othersSplayedColors.includes(color))
+          .length
+      }
     }
   ]
 }
