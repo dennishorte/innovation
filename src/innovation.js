@@ -1298,6 +1298,15 @@ Innovation.prototype.checkAchievementAvailable = function(name) {
   return !!this.getZoneById('achievements').cards().find(ach => ach.name === name)
 }
 
+Innovation.prototype.checkAchievementEligibility = function(player, card, opts={}) {
+  const playerScore = this.getScore(player)
+  const topCardAge = this.getHighestTopAge(player, { reason: 'achieve' })
+
+  const ageRequirement = opts.ignoreAge || card.age <= topCardAge
+  const scoreRequirement = opts.ignoreScore || this.checkScoreRequirement(player, card)
+  return ageRequirement && scoreRequirement
+}
+
 Innovation.prototype.checkCardIsTop = function(card) {
   return this.getZoneByCard(card).cards()[0] === card
 }
@@ -1700,9 +1709,10 @@ Innovation.prototype.mAchievementVictoryCheck = function() {
 
 Innovation.prototype.mAchieve = function(player, card) {
   const target = this.getZoneByPlayer(player, 'achievements')
+  const source = this.getZoneById(card.zone)
   this.mLog({
-    template: '{player} achieves {card}',
-    args: { player, card }
+    template: '{player} achieves {card} from {zone}',
+    args: { player, card, zone: source }
   })
   this.mMoveCardTo(card, target)
   this.mActed(player)
@@ -2218,15 +2228,9 @@ Innovation.prototype.getAvailableAchievementsRaw = function(player) {
 }
 
 Innovation.prototype.getEligibleAchievementsRaw = function(player, opts={}) {
-  const playerScore = this.getScore(player)
-  const topCardAge = this.getHighestTopAge(player, { reason: 'achieve' })
-
-  return this.getAvailableAchievementsRaw(player, opts)
-             .filter(card => {
-      const ageRequirement = opts.ignoreAge || card.age <= topCardAge
-      const scoreRequirement = opts.ignoreScore || this.checkScoreRequirement(player, card)
-      return ageRequirement && scoreRequirement
-    })
+  return this
+    .getAvailableAchievementsRaw(player, opts)
+    .filter(card => this.checkAchievementEligibility(player, card, opts))
 }
 
 Innovation.prototype.formatAchievements = function(array) {
