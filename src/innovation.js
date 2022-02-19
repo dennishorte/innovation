@@ -1645,6 +1645,12 @@ Innovation.prototype.getTopCards = function(player) {
     .filter(card => card !== undefined)
 }
 
+Innovation.prototype.getTopCardsAll = function() {
+  return this
+    .getPlayerAll()
+    .flatMap(player => this.getTopCards(player))
+}
+
 Innovation.prototype.getZoneByCard = function(card) {
   return this.getZoneById(card.zone)
 }
