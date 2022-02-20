@@ -18,7 +18,9 @@ function Card() {
 
   this.dogmaImpl = []
   this.echoImpl = []
-  this.inspireImpl = []
+  this.inspireImpl = (game, player) => {
+    game.aDrawAndMeld(player, game.getEffectAge(this, 2))
+  }
   this.karmaImpl = [
     {
       trigger: 'decree-for-two',
@@ -26,8 +28,11 @@ function Card() {
     },
     {
       trigger: 'list-effects',
-      func(player, game) {
-        console.log('not implemented')
+      func(game, player) {
+        return game
+          .getPlayerAll()
+          .map(player => game.getTopCard(player, 'blue'))
+          .filter(card => card !== undefined)
       }
     }
   ]

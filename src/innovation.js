@@ -812,8 +812,6 @@ Innovation.prototype.aDecree = function(player, name) {
 Innovation.prototype.aDogmaHelper = function(player, card, opts) {
   this.state.shared = false
 
-  const color = this.getZoneByPlayer(player, card.color)
-
   // Store the biscuits now because changes caused by the dogma action should
   // not affect the number of biscuits used for evaluting the effect.
   const biscuits = this.getBiscuits()
@@ -832,7 +830,8 @@ Innovation.prototype.aDogmaHelper = function(player, card, opts) {
 
   // Store the planned effects now, because changes caused by the dogma action
   // should not affect which effects are executed.
-  const effectCards = color
+  const effectCards = this
+    .getZoneByCard(card)
     .cards()
     .filter(card => this.checkEffectIsVisible(card))
     .reverse()  // Start from the bottom of the stack when executing effects
@@ -2325,11 +2324,20 @@ Innovation.prototype._generateActionChoicesDogma = function() {
     .utilColors()
     .map(color => this.getZoneByPlayer(player, color))
     .filter(zone => this.checkZoneHasVisibleDogmaOrEcho(zone))
-    .map(zone => zone.cards()[0].name)
+    .map(zone => zone.cards()[0])
+
+  const extraEffects = this
+    .getInfoByKarmaTrigger(player, 'list-effects')
+    .flatMap(info => info.impl.func(this, player))
+
+  const allTargets = util
+    .array
+    .distinct([...dogmaTargets, ...extraEffects])
+    .map(card => card.name)
 
   return {
     name: 'Dogma',
-    choices: dogmaTargets
+    choices: allTargets
   }
 }
 
