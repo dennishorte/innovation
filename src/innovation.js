@@ -2136,6 +2136,11 @@ Innovation.prototype.utilEnrichLogArgs = function(msg) {
   }
 }
 
+Innovation.prototype.utilHighestCards = function(cards) {
+  const sorted = [...cards].sort((l, r) => r.age - l.age)
+  return util.array.takeWhile(sorted, card => card.age === sorted[0].age)
+}
+
 Innovation.prototype.utilParseBiscuits = function(biscuitString) {
   const counts = this.utilEmptyBiscuits()
   for (const ch of biscuitString) {

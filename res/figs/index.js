@@ -4,7 +4,7 @@ const cards = [
   require('./FuXi.js'),
   require('./Hatshepsut.js'),
   require('./Daedalus.js'),
-  require('./Ptahhotep.js'),
+  require('./Ptahotep.js'),
   require('./Shennong.js'),
   require('./HuangDi.js'),
   require('./Imhotep.js'),

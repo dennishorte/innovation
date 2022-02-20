@@ -1,8 +1,8 @@
 const CardBase = require(`../CardBase.js`)
 
 function Card() {
-  this.id = `Ptahhotep`  // Card names are unique in Innovation
-  this.name = `Ptahhotep`
+  this.id = `Ptahotep`  // Card names are unique in Innovation
+  this.name = `Ptahotep`
   this.color = `purple`
   this.age = 1
   this.expansion = `figs`
@@ -17,8 +17,20 @@ function Card() {
 
   this.dogmaImpl = []
   this.echoImpl = []
-  this.inspireImpl = []
-  this.karmaImpl = []
+  this.inspireImpl = (game, player) => {
+    game.aChooseAndScore(player, game.getTopCards(player))
+  }
+  this.karmaImpl = [
+    {
+      trigger: 'demand-success',
+      kind: 'would-first',
+      matches: () => true,
+      func: (game, player, { leader }) => {
+        const highest = game.utilHighestCards(game.getCardsByZone(leader, 'score')).slice(0, 1)
+        game.aChooseAndTransfer(player, highest, game.getZoneByPlayer(player, 'score'))
+      }
+    }
+  ]
 }
 
 Card.prototype = Object.create(CardBase.prototype)
