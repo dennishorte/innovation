@@ -1544,6 +1544,11 @@ Innovation.prototype.getLogIndent = function(msg) {
   return indent
 }
 
+Innovation.prototype.getNonEmptyAges = function() {
+  return [1,2,3,4,5,6,7,8,9,10]
+    .filter(age => this.getZoneByDeck('base', age).cards().length > 0)
+}
+
 Innovation.prototype.getNumAchievementsToWin = function() {
   const base = 6
   const numPlayerAdjustment = 2 - this.getPlayerAll().length
