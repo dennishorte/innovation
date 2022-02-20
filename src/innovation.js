@@ -632,6 +632,10 @@ Innovation.prototype.aChoosePlayer = function(player, choices, opts) {
     return undefined
   }
 
+  if (choices[0].name) {
+    choices = choices.map(player => player.name)
+  }
+
   const playerNames = this.requestInputSingle({
     actor: player.name,
     title: 'Choose a Player',
