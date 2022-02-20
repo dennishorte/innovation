@@ -81,6 +81,7 @@ Innovation.prototype.initialize = function() {
 Innovation.prototype.initializeTransientState = function() {
   this.mResetDogmaInfo()
   this.mResetMonumentCounts()
+  this.mResetPeleCount()
   this.state.turn = 1
   this.state.round = 1
   this.state.karmaDepth = 0
@@ -432,6 +433,7 @@ Innovation.prototype.endTurn = function() {
   this.state.didInspire = false
   this.mResetDogmaInfo()
   this.mResetMonumentCounts()
+  this.mResetPeleCount()
 }
 
 
@@ -1923,6 +1925,10 @@ Innovation.prototype.mResetMonumentCounts = function() {
   this.state.monument = util.array.toDict(emptyInfo)
 }
 
+Innovation.prototype.mResetPeleCount = function() {
+  this.state.tuckedGreenForPele = []
+}
+
 Innovation.prototype.mReturn = function(player, card, opts) {
   opts = opts || {}
   const source = this.getZoneByCard(card)
@@ -2020,6 +2026,9 @@ Innovation.prototype.mTuck = function(player, card) {
     template: '{player} tucks {card}',
     args: { player, card }
   })
+  if (card.color === 'green') {
+    util.array.pushUnique(this.state.tuckedGreenForPele, player)
+  }
   this.state.monument[player.name].tuck += 1
   this.mActed(player)
   return card
