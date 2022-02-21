@@ -2326,14 +2326,18 @@ Innovation.prototype._generateActionChoicesDecree = function() {
   }
 }
 
-Innovation.prototype._generateActionChoicesDogma = function() {
-  const player = this.getPlayerCurrent()
-
-  const dogmaTargets = this
+Innovation.prototype.getDogmaTargets = function(player) {
+  return this
     .utilColors()
     .map(color => this.getZoneByPlayer(player, color))
     .filter(zone => this.checkZoneHasVisibleDogmaOrEcho(zone))
     .map(zone => zone.cards()[0])
+}
+
+Innovation.prototype._generateActionChoicesDogma = function() {
+  const player = this.getPlayerCurrent()
+
+  const dogmaTargets = this.getDogmaTargets(player)
 
   const extraEffects = this
     .getInfoByKarmaTrigger(player, 'list-effects')
