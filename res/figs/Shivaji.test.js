@@ -4,7 +4,7 @@ const t = require('../../src/testutil.js')
 
 describe('Shivaji', () => {
 
-  test('echo (with i)', () => {
+  test('echo', () => {
     const game = t.fixtureFirstPlayer({ expansions: ['base', 'figs'] })
     t.setBoard(game, {
       dennis: {
