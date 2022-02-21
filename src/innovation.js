@@ -1168,7 +1168,10 @@ Innovation.prototype._aKarmaHelper = function(player, infos, opts={}) {
 Innovation.prototype.aKarma = function(player, kind, opts={}) {
   const infos = this
     .getInfoByKarmaTrigger(player, kind)
-    .filter(info => info.impl.matches && info.impl.matches(this, player, opts))
+    .filter(info => info.impl.matches)
+    .filter(info => {
+      return info.impl.matches(this, player, { ...opts, owner: info.owner })
+    })
   return this._aKarmaHelper(player, infos, { ...opts, trigger: kind })
 }
 
