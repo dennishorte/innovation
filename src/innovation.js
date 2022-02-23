@@ -841,8 +841,8 @@ Innovation.prototype.aDogmaHelper = function(player, card, opts) {
   // Store the biscuits now because changes caused by the dogma action should
   // not affect the number of biscuits used for evaluting the effect.
   const biscuits = this.getBiscuits()
-  const primaryBiscuit = card.dogmaBiscuit
-  const biscuitComparator = this._getBiscuitComparator(player, primaryBiscuit, biscuits)
+  const featuredBiscuit = card.dogmaBiscuit
+  const biscuitComparator = this._getBiscuitComparator(player, featuredBiscuit, biscuits)
 
   const sharing = this
     .getPlayerAll()
@@ -889,7 +889,7 @@ Innovation.prototype.aDogmaHelper = function(player, card, opts) {
       args: { player }
     })
     this.mLogIndent()
-    this.aDraw(player, { exp: 'figs', share: true })
+    this.aDraw(player, { exp: 'figs', share: true, featuredBiscuit })
     this.mLogOutdent()
   }
 
@@ -2450,16 +2450,16 @@ Innovation.prototype._generateActionChoicesMeld = function() {
   }
 }
 
-Innovation.prototype._getBiscuitComparator = function(player, primaryBiscuit, biscuits) {
+Innovation.prototype._getBiscuitComparator = function(player, featuredBiscuit, biscuits) {
   // Some karmas affect how sharing is calculated by adjusting the featured biscuit.
   const featuredBiscuitKarmas = this
     .getInfoByKarmaTrigger(player, 'featured-biscuit')
-    .filter(info => info.impl.matches(this, player, { biscuit: primaryBiscuit }))
+    .filter(info => info.impl.matches(this, player, { biscuit: featuredBiscuit }))
 
   let adjustedBiscuit
 
   if (featuredBiscuitKarmas.length === 0) {
-    adjustedBiscuit = primaryBiscuit
+    adjustedBiscuit = featuredBiscuit
   }
   else if (featuredBiscuitKarmas.length === 1) {
     const info = featuredBiscuitKarmas[0]
@@ -2470,7 +2470,7 @@ Innovation.prototype._getBiscuitComparator = function(player, primaryBiscuit, bi
         text: info.text
       }
     })
-    adjustedBiscuit = this.aCardEffect(player, info, { baseBiscuit: primaryBiscuit })
+    adjustedBiscuit = this.aCardEffect(player, info, { baseBiscuit: featuredBiscuit })
   }
   else {
     throw new Error('Multiple biscuit karmas are not supported')
