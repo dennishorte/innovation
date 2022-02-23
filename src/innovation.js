@@ -467,10 +467,32 @@ Innovation.prototype.aCardEffects = function(
   demanding=[],
   endorsed=false
 ) {
-  const texts = util
-    .getAsArray(card, kind)
-    .filter(text => text.length > 0)
-  const impls = util.getAsArray(card, `${kind}Impl`)
+  let texts
+  let impls
+
+  if (kind === 'hex') {
+    const karmas = this
+      .getInfoByKarmaTrigger(leader, 'hex-effect')
+      .filter(info => info.impl.matches(this, player, { card }))
+
+    if (karmas.length === 0) {
+      return
+    }
+    else if (karmas.length > 1) {
+      throw new Error(`Don't know how to handle multiple hex-effect karmas`)
+    }
+
+    const { text, impl } = karmas[0].impl.func(this, leader, { card })
+
+    texts = [text]
+    impls = [impl]
+  }
+  else {
+    texts = util
+      .getAsArray(card, kind)
+      .filter(text => text.length > 0)
+    impls = util.getAsArray(card, `${kind}Impl`)
+  }
 
   const repeatCount = endorsed ? 2 : 1
 
@@ -840,12 +862,6 @@ Innovation.prototype.aDogmaHelper = function(player, card, opts) {
     .filter(card => this.checkEffectIsVisible(card))
     .reverse()  // Start from the bottom of the stack when executing effects
 
-  if (opts.artifact) {
-    // Artifact biscuits are used only when taking the free dogma action.
-    const extraBiscuits = this.getBiscuitsByCard(card)
-    biscuits[player.name] = this.utilCombineBiscuits(biscuits[player.name], extraBiscuits)
-  }
-
   // Regardless of normal dogma or artifact dogma, the selected card is executed last.
   if (!effectCards.includes(card)) {
     effectCards.push(card)
@@ -856,6 +872,7 @@ Innovation.prototype.aDogmaHelper = function(player, card, opts) {
   for (const ecard of effectCards) {
     for (const player of this.getPlayersStartingNext()) {
       this.aCardEffects(leader, player, ecard, 'echo', biscuits, sharing, demanding, endorsed)
+      this.aCardEffects(leader, player, ecard, 'hex', biscuits, sharing, demanding, endorsed)
 
       // Only the top card (or the artifact card for free artifact dogma actions)
       // get to do their dogma effects.
@@ -1320,14 +1337,21 @@ Innovation.prototype.checkCardIsTop = function(card) {
 }
 
 Innovation.prototype.checkEffectIsVisible = function(card) {
+  const player = this.getPlayerByCard(card)
   const isTop = this.checkCardIsTop(card)
+  const includeHexesAsEcho = this.getInfoByKarmaTrigger(player, 'hex-effect').length > 0
 
   if (isTop) {
-    return card.dogma.length > 0 || card.echo.length > 0
+    const hasDogma = card.dogma.length > 0
+    const hasEcho = card.echo.length > 0
+    const hasHex = includeHexesAsEcho
+    return hasDogma || hasEcho || hasHex
   }
   else {
     const zone = this.getZoneByCard(card)
-    return card.checkEchoIsVisible(zone.splay)
+    const echoIsVisible = card.checkEchoIsVisible(zone.splay)
+    const hexIsVisible = includeHexesAsEcho && card.checkBiscuitIsVisible('h', zone.splay)
+    return echoIsVisible || hexIsVisible
   }
 }
 
@@ -1349,13 +1373,6 @@ Innovation.prototype.checkScoreRequirement = function(player, card) {
 }
 
 Innovation.prototype.checkZoneHasVisibleDogmaOrEcho = function(zone) {
-  if (zone.cards().length === 0) {
-    return false
-  }
-  if (zone.cards()[0].dogma.length > 0) {
-    return true
-  }
-
   return zone.cards().some(card => this.checkEffectIsVisible(card))
 }
 
