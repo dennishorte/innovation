@@ -1055,7 +1055,7 @@ Innovation.prototype.aInspire = function(player, color, opts={}) {
   const zone = this.getZoneByPlayer(player, color)
   const biscuits = this.getBiscuits()
 
-  const karmaKind = this.aKarma(player, 'inspire', opts)
+  const karmaKind = this.aKarma(player, 'inspire', { ...opts, color })
   if (karmaKind === 'would-instead') {
     return
   }
@@ -1128,6 +1128,15 @@ Innovation.prototype._aKarmaHelper = function(player, infos, opts={}) {
         template: '{player} would draw a card, triggering...',
         args: {
           player,
+        }
+      })
+    }
+    else if (opts.trigger === 'inspire') {
+      this.mLog({
+        template: '{player} would inspire {color}, triggering...',
+        args: {
+          player,
+          color: opts.color,
         }
       })
     }
