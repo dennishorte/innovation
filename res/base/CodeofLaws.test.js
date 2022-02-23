@@ -5,12 +5,16 @@ const t = require('../../src/testutil.js')
 describe('Code of Laws', () => {
   test('dogma, with splay', () => {
     const game = t.fixtureTopCard('Code of Laws')
-    game.testSetBreakpoint('before-first-player', (game) => {
-      t.setColor(game, 'dennis', 'blue', ['Tools'])
-      t.setColor(game, 'dennis', 'green', ['The Wheel'])
-      t.setColor(game, 'dennis', 'red', ['Archery'])
-      t.setHand(game, 'dennis', ['Writing', 'Code of Laws', 'Metalworking'])
+    t.setBoard(game, {
+      dennis: {
+        purple: ['Code of Laws'],
+        blue: ['Tools'],
+        green: ['The Wheel'],
+        red: ['Archery'],
+        hand: ['Writing', 'Agriculture', 'Metalworking'],
+      }
     })
+
     const result1 = game.run()
     const result2 = t.choose(game, result1, 'Dogma.Code of Laws')
 

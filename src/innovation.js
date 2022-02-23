@@ -467,33 +467,12 @@ Innovation.prototype.aCardEffects = function(
   demanding=[],
   endorsed=false
 ) {
-  let texts
-  let impls
-
-  if (kind === 'hex') {
-    const karmas = this
-      .getInfoByKarmaTrigger(leader, 'hex-effect')
-      .filter(info => info.impl.matches(this, player, { card }))
-
-    if (karmas.length === 0) {
-      return
-    }
-    else if (karmas.length > 1) {
-      throw new Error(`Don't know how to handle multiple hex-effect karmas`)
-    }
-
-    const { text, impl } = karmas[0].impl.func(this, leader, { card })
-
-    texts = [text]
-    impls = [impl]
-  }
-  else {
-    texts = util
-      .getAsArray(card, kind)
-      .filter(text => text.length > 0)
-    impls = util.getAsArray(card, `${kind}Impl`)
+  const effects = this.getVisibleEffects(card, kind)
+  if (!effects) {
+    return
   }
 
+  const { texts, impls } = effects
   const repeatCount = endorsed ? 2 : 1
 
   for (let i = 0; i < texts.length; i++) {
@@ -872,7 +851,6 @@ Innovation.prototype.aDogmaHelper = function(player, card, opts) {
   for (const ecard of effectCards) {
     for (const player of this.getPlayersStartingNext()) {
       this.aCardEffects(leader, player, ecard, 'echo', biscuits, sharing, demanding, endorsed)
-      this.aCardEffects(leader, player, ecard, 'hex', biscuits, sharing, demanding, endorsed)
 
       // Only the top card (or the artifact card for free artifact dogma actions)
       // get to do their dogma effects.
@@ -893,10 +871,10 @@ Innovation.prototype.aDogmaHelper = function(player, card, opts) {
     this.mLogOutdent()
   }
 
-  // Grace Hopper has an "if your opponent didn't share" karma effect
+  // Grace Hopper and Susan Blackmore have "if your opponent didn't share" karma effects
   else {
     for (const other of this.getPlayerOpponents(player)) {
-      this.aKarma(other, 'no-share', { leader: player })
+      this.aKarma(other, 'no-share', { card, leader: player })
     }
   }
 }
@@ -1336,23 +1314,80 @@ Innovation.prototype.checkCardIsTop = function(card) {
   return this.getZoneByCard(card).cards()[0] === card
 }
 
-Innovation.prototype.checkEffectIsVisible = function(card) {
+Innovation.prototype.getSplayByCard = function(card) {
+  const zone = this.getZoneByCard(card)
+  const cards = zone.cards()
+  return card === cards[0] ? 'top' : zone.splay
+}
+
+Innovation.prototype.getVisibleEffects = function(card, kind) {
   const player = this.getPlayerByCard(card)
   const isTop = this.checkCardIsTop(card)
-  const includeHexesAsEcho = this.getInfoByKarmaTrigger(player, 'hex-effect').length > 0
+  const splay = this.getSplayByCard(card)
 
-  if (isTop) {
-    const hasDogma = card.dogma.length > 0
-    const hasEcho = card.echo.length > 0
-    const hasHex = includeHexesAsEcho
-    return hasDogma || hasEcho || hasHex
+  if (kind === 'dogma') {
+    if (isTop && card.dogma.length > 0) {
+      return {
+        texts: card.dogma,
+        impls: card.getImpl('dogma'),
+      }
+    }
   }
+
+  else if (kind === 'echo') {
+    const hexKarmas = this
+      .getInfoByKarmaTrigger(player, 'hex-effect')
+      .filter(info => info.impl.matches(this, player, { card }))
+    const includeHexesAsEcho = hexKarmas.length > 0
+    const echoIsVisible = card.checkEchoIsVisible(splay)
+    const hexIsVisible = includeHexesAsEcho && card.checkBiscuitIsVisible('h', splay)
+
+    const texts = []
+    const impls = []
+
+    if (echoIsVisible) {
+      for (const text of util.getAsArray(card, 'echo')) {
+        texts.push(text)
+      }
+      for (const impl of util.getAsArray(card, 'echoImpl')) {
+        impls.push(impl)
+      }
+    }
+
+    if (hexIsVisible) {
+      const { text, impl } = hexKarmas[0].impl.func(this, player, { card })
+      if (text) {
+        texts.push(text)
+        impls.push(impl)
+      }
+    }
+
+    if (texts.length > 0) {
+      return {
+        texts,
+        impls,
+      }
+    }
+  }
+
+  else if (kind === 'inspire') {
+    if (card.checkBiscuitIsVisible('*', splay)) {
+      return {
+        texts: util.getAsArray(card, 'inspire'),
+        impls: util.getAsArray(card, 'inspireImpl')
+      }
+    }
+  }
+
   else {
-    const zone = this.getZoneByCard(card)
-    const echoIsVisible = card.checkEchoIsVisible(zone.splay)
-    const hexIsVisible = includeHexesAsEcho && card.checkBiscuitIsVisible('h', zone.splay)
-    return echoIsVisible || hexIsVisible
+    throw new Error(`Unknown effect type: ${kind}`)
   }
+
+  return undefined
+}
+
+Innovation.prototype.checkEffectIsVisible = function(card) {
+  return this.getVisibleEffects(card, 'dogma') || this.getVisibleEffects(card, 'echo')
 }
 
 Innovation.prototype.checkInspireIsVisible = function(card) {
