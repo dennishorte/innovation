@@ -16,17 +16,24 @@ function Card() {
   this.dogma = []
 
   this.dogmaImpl = []
-  this.echoImpl = []
+  this.echoImpl = (game, player) => {
+    const choices = game
+      .getTopCardsAll()
+      .filter(card => card.checkHasBiscuit('k'))
+    game.aChooseAndScore(player, choices)
+  }
   this.inspireImpl = []
   this.karmaImpl = [
     {
       trigger: 'score',
       kind: 'would-instead',
       matches(game, player, { card }) {
-        return false
+        const zone = game.getZoneByPlayer(player, card.color)
+        return zone.splay !== 'none'
       },
-      func(game, player, { card }) {
-        console.log('not implemented')
+      func: (game, player, { card }) => {
+        game.aTuck(player, card)
+        game.aDraw(player, { age: game.getEffectAge(this, 3) })
       }
     }
   ]
