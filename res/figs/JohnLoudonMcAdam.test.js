@@ -43,6 +43,7 @@ describe('John Loudon McAdam', () => {
         red: ['Sparta'],
         score: ['Software']
       },
+      achievements: ['The Wheel', 'Calendar', 'Machinery'],
     })
 
     const request1 = game.run()
