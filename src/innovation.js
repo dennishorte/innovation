@@ -867,7 +867,8 @@ Innovation.prototype.aDogmaHelper = function(player, card, opts) {
       args: { player }
     })
     this.mLogIndent()
-    this.aDraw(player, { exp: 'figs', share: true, featuredBiscuit })
+    const expansion = this.getExpansionList().includes('figs') ? 'figs' : ''
+    this.aDraw(player, { exp: expansion, share: true, featuredBiscuit })
     this.mLogOutdent()
   }
 
