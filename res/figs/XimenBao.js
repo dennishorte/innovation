@@ -18,14 +18,16 @@ function Card() {
 
   this.dogmaImpl = []
   this.echoImpl = []
-  this.inspireImpl = []
+  this.inspireImpl = (game, player) => {
+    game.aChooseAndTuck(player, game.getCardsByZone(player, 'hand'))
+  }
   this.karmaImpl = [
     {
       trigger: 'decree-for-two',
       decree: 'Expansion',
     },
     {
-      trigger: 'list-effects',
+      trigger: ['list-echo-effects', 'list-inspire-effects'],
       func(player, game) {
         console.log('not implemented')
       }
