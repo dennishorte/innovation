@@ -28,8 +28,18 @@ function Card() {
     },
     {
       trigger: ['list-echo-effects', 'list-inspire-effects'],
-      func(player, game) {
-        console.log('not implemented')
+      func(game, player, { color, kind }) {
+        if (color !== 'yellow') {
+          return game.getVisibleEffectsByColor(player, color, kind)
+        }
+        else {
+          return game
+            .getVisibleEffectsByColor(player, 'red', kind)
+            .concat(game.getVisibleEffectsByColor(player, 'blue', kind))
+            .concat(game.getVisibleEffectsByColor(player, 'green', kind))
+            .concat(game.getVisibleEffectsByColor(player, 'purple', kind))
+            .concat(game.getVisibleEffectsByColor(player, 'yellow', kind))
+        }
       }
     }
   ]

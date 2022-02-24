@@ -835,20 +835,20 @@ Innovation.prototype.aDogmaHelper = function(player, card, opts) {
 
   // Store the planned effects now, because changes caused by the dogma action
   // should not affect which effects are executed.
-  const effectCards = this
-    .getZoneByCard(card)
-    .cards()
-    .filter(card => this.checkEffectIsVisible(card))
-    .reverse()  // Start from the bottom of the stack when executing effects
+  const echoCards = this.getVisibleEffectsByColor(player, card.color, 'echo')
+  const dogmaCards = this.getVisibleEffectsByColor(player, card.color, 'dogma')
+
+  const effectCards = [...echoCards, ...dogmaCards]
+    .map(effect => effect.card)
 
   // Regardless of normal dogma or artifact dogma, the selected card is executed last.
-  if (!effectCards.includes(card)) {
-    effectCards.push(card)
-  }
+  effectCards.push(card)
+
+  const finalEffects = util.array.distinct(effectCards)
 
   const endorsed = opts.endorsed
   const leader = this.getPlayerCurrent()
-  for (const ecard of effectCards) {
+  for (const ecard of finalEffects) {
     for (const player of this.getPlayersStartingNext()) {
       this.aCardEffects(leader, player, ecard, 'echo', biscuits, sharing, demanding, endorsed)
 
@@ -1061,13 +1061,9 @@ Innovation.prototype.aInspire = function(player, color, opts={}) {
   }
 
   // Gather effects
-  const effectCards = []
-  for (const card of zone.cards().reverse()) {
-    const splay = this.checkCardIsTop(card) ? 'top' : zone.splay
-    if (card.checkInspireIsVisible(splay)) {
-      effectCards.push(card)
-    }
-  }
+  const effectCards = this
+    .getVisibleEffectsByColor(player, color, 'inspire')
+    .map(effect => effect.card)
 
   // Execute effects
   for (const card of effectCards) {
@@ -1347,8 +1343,11 @@ Innovation.prototype.checkScoreRequirement = function(player, card) {
   return this.getScoreCost(player, card) <= this.getScore(player)
 }
 
-Innovation.prototype.checkZoneHasVisibleDogmaOrEcho = function(zone) {
-  return zone.cards().some(card => this.checkEffectIsVisible(card))
+Innovation.prototype.checkZoneHasVisibleDogmaOrEcho = function(player, zone) {
+  return (
+    this.getVisibleEffectsByColor(player, zone.color, 'dogma').length > 0
+    || this.getVisibleEffectsByColor(player, zone.color, 'echo').length > 0
+  )
 }
 
 
@@ -1696,6 +1695,7 @@ Innovation.prototype.getVisibleEffects = function(card, kind) {
   if (kind === 'dogma') {
     if (isTop && card.dogma.length > 0) {
       return {
+        card,
         texts: card.dogma,
         impls: card.getImpl('dogma'),
       }
@@ -1732,6 +1732,7 @@ Innovation.prototype.getVisibleEffects = function(card, kind) {
 
     if (texts.length > 0) {
       return {
+        card,
         texts,
         impls,
       }
@@ -1741,6 +1742,7 @@ Innovation.prototype.getVisibleEffects = function(card, kind) {
   else if (kind === 'inspire') {
     if (card.checkBiscuitIsVisible('*', splay)) {
       return {
+        card,
         texts: util.getAsArray(card, 'inspire'),
         impls: util.getAsArray(card, 'inspireImpl')
       }
@@ -1752,6 +1754,31 @@ Innovation.prototype.getVisibleEffects = function(card, kind) {
   }
 
   return undefined
+}
+
+Innovation.prototype.getVisibleEffectsByColor = function(player, color, kind) {
+  const karma = this
+    .getInfoByKarmaTrigger(player, `list-${kind}-effects`)
+
+
+  if (karma.length === 1) {
+    this.state.karmaDepth += 1
+    const result = karma.flatMap(info => info.impl.func(this, player, { color, kind }))
+    this.state.karmaDepth -= 1
+    return result
+  }
+
+  else if (karma.length === 2) {
+    throw new Error(`Too many list-effect karmas`)
+  }
+
+  else {
+    return this
+      .getCardsByZone(player, color)
+      .reverse()
+      .map(card => this.getVisibleEffects(card, kind))
+      .filter(effect => effect !== undefined)
+  }
 }
 
 Innovation.prototype.getZoneByCard = function(card) {
@@ -2418,7 +2445,7 @@ Innovation.prototype.getDogmaTargets = function(player) {
   return this
     .utilColors()
     .map(color => this.getZoneByPlayer(player, color))
-    .filter(zone => this.checkZoneHasVisibleDogmaOrEcho(zone))
+    .filter(zone => this.checkZoneHasVisibleDogmaOrEcho(player, zone))
     .map(zone => zone.cards()[0])
 }
 
@@ -2467,7 +2494,7 @@ Innovation.prototype._generateActionChoicesEndorse = function() {
   const stacksWithEndorsableEffects = this
     .utilColors()
     .map(color => this.getZoneByPlayer(player, color))
-    .filter(zone => this.checkZoneHasVisibleDogmaOrEcho(zone))
+    .filter(zone => this.checkZoneHasVisibleDogmaOrEcho(player, zone))
 
   const colors = []
 
@@ -2490,13 +2517,9 @@ Innovation.prototype._generateActionChoicesInspire = function() {
   const inspireColors = []
 
   for (const color of this.utilColors()) {
-    const zone = this.getZoneByPlayer(player, color)
-    for (const card of zone.cards()) {
-      const splay = this.checkCardIsTop(card) ? 'top' : zone.splay
-      if (card.checkInspireIsVisible(splay)) {
-        inspireColors.push(color)
-        break
-      }
+    const effects = this.getVisibleEffectsByColor(player, color, 'inspire')
+    if (effects.length > 0) {
+      inspireColors.push(color)
     }
   }
 
