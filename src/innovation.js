@@ -1439,8 +1439,13 @@ Innovation.prototype.getBonuses = function(player) {
       }
     })
 
-  bonuses.sort((l, r) => r - l)
+  const karmaBonuses = this
+    .getInfoByKarmaTrigger(player, 'list-bonuses')
+    .flatMap(info => info.impl.func(this, player))
+
   return bonuses
+    .concat(karmaBonuses)
+    .sort((l, r) => r - l)
 }
 
 Innovation.prototype.getCardByName = function(name) {
