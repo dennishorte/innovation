@@ -1251,6 +1251,22 @@ Innovation.prototype.aTuck = function(player, card, opts={}) {
   return this.mTuck(player, card, opts)
 }
 
+Innovation.prototype.aUnsplay = function(player, zone, opts={}) {
+  if (zone.splay === 'none') {
+    this.mLog({
+      template: '{zone} is already unsplayed',
+      args: { zone }
+    })
+  }
+  else {
+    this.mLog({
+      template: '{player} unsplays {zone}',
+      args: { player, zone }
+    })
+    zone.splay = 'none'
+  }
+}
+
 Innovation.prototype.aYesNo = function(player, title) {
   const result = this.requestInputSingle({
     actor: player.name,
