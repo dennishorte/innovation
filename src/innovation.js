@@ -735,7 +735,7 @@ Innovation.prototype.aChooseAndSplay = function(player, choices, direction, opts
     this.mLogDoNothing(player)
   }
   else {
-    this.aSplay(player, colors[0], direction)
+    return this.aSplay(player, colors[0], direction)
   }
 }
 
@@ -2139,6 +2139,7 @@ Innovation.prototype.mSplay = function(player, color, direction) {
       args: { player, color, direction }
     })
     this.mActed(player)
+    return color
   }
 }
 
