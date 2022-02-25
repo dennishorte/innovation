@@ -481,6 +481,10 @@ Innovation.prototype.aCardEffects = function(
       const effectImpl = impls[i]
       const isDemand = effectText.startsWith('I demand')
 
+      if (!isDemand) {
+        this.state.couldShare = true
+      }
+
       const demand = isDemand && demanding.includes(player)
       const share = !isDemand && sharing.includes(player) && z === 0
       const owner = !isDemand && player === leader
@@ -816,6 +820,7 @@ Innovation.prototype.aDecree = function(player, name) {
 
 Innovation.prototype.aDogmaHelper = function(player, card, opts) {
   this.state.shared = false
+  this.state.couldShare = false
 
   // Store the biscuits now because changes caused by the dogma action should
   // not affect the number of biscuits used for evaluting the effect.
@@ -873,7 +878,7 @@ Innovation.prototype.aDogmaHelper = function(player, card, opts) {
   }
 
   // Grace Hopper and Susan Blackmore have "if your opponent didn't share" karma effects
-  else {
+  else if (this.state.couldShare) {
     for (const other of this.getPlayerOpponents(player)) {
       this.aKarma(other, 'no-share', { card, leader: player })
     }
