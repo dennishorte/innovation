@@ -590,7 +590,7 @@ Innovation.prototype.aChooseCard = function(player, cards, opts) {
   }
 }
 
-Innovation.prototype.aChooseCards = function(player, cards, opts) {
+Innovation.prototype.aChooseCards = function(player, cards, opts={}) {
   if (cards.length === 0) {
     this.mLogNoEffect()
     return undefined
