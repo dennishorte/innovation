@@ -514,13 +514,20 @@ Innovation.prototype.aCardEffects = function(
           }
         }
 
-        this.aCardEffect(player, effectInfo, {
+        const result = this.aCardEffect(player, effectInfo, {
           biscuits,
           leader,
         })
 
         this.state.dogmaInfo.demanding = false
         this.mLogOutdent()
+
+        if (result === '__STOP__') {
+          this.mLog({
+            template: 'Dogma action is complete'
+          })
+          return result
+        }
       }
     }
   }
@@ -860,7 +867,10 @@ Innovation.prototype.aDogmaHelper = function(player, card, opts) {
       // Only the top card (or the artifact card for free artifact dogma actions)
       // get to do their dogma effects.
       if (ecard === card) {
-        this.aCardEffects(leader, player, ecard, 'dogma', biscuits, sharing, demanding, endorsed)
+        const result = this.aCardEffects(leader, player, ecard, 'dogma', biscuits, sharing, demanding, endorsed)
+        if (result === '__STOP__') {
+          return result
+        }
       }
     }
   }
