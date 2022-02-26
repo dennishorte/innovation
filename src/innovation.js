@@ -718,11 +718,7 @@ function ChooseAndFactory(manyFuncName, numArgs) {
   return function(...args) {
     const player = args[0]
     const choices = args[1]
-    const opts = args[numArgs]
-
-    if (opts.count && (opts.highest || opts.lowest)) {
-      console.log('hello')
-    }
+    const opts = args[numArgs] || {}
 
     const cards = this.aChooseCards(player, choices, opts)
     if (cards) {
