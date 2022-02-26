@@ -27,7 +27,6 @@ describe('Mass Media', () => {
     t.testBoard(game, {
       dennis: {
         green: ['Mass Media'],
-        hand: ['Tools'],
         score: ['Fermenting'],
       },
       micah: {
