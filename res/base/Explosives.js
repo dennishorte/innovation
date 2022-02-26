@@ -18,27 +18,34 @@ function Card() {
   this.dogmaImpl = [
     (game, player, { leader }) => {
       const target = game.getZoneByPlayer(leader, 'hand')
+      const cards = game.getCardsByZone(player, 'hand')
+      const transferred = game.kHighest('transfer', 3, player, cards, target)
 
-      let cards = game.getCardsByZone(player, 'hand')
-      let numTransferred = 0
-
-      while (numTransferred < 3 && cards.length > 0) {
-        const highest = game.utilHighestCards(cards)
-        cards = cards.filter(card => !highest.includes(card))
-
-        if (numTransferred + highest.length <= 3) {
-          game.aTransferMany(player, highest, target)
-          numTransferred += highest.length
-        }
-        else {
-          game.aChooseAndTransfer(player, highest, target, { count: 3 - numTransferred })
-          break
-        }
-      }
-
-      if (numTransferred && game.getCardsByZone(player, 'hand').length === 0) {
+      const transferredCondition = transferred.length > 0
+      const emptyHandCondition = game.getCardsByZone(player, 'hand').length === 0
+      if (transferredCondition && emptyHandCondition) {
         game.aDraw(player, { age: game.getEffectAge(this, 7) })
       }
+      /*
+       *       let numTransferred = 0
+       *
+       *       while (numTransferred < 3 && cards.length > 0) {
+       *         const highest = game.utilHighestCards(cards)
+       *         cards = cards.filter(card => !highest.includes(card))
+       *
+       *         if (numTransferred + highest.length <= 3) {
+       *           game.aTransferMany(player, highest, target)
+       *           numTransferred += highest.length
+       *         }
+       *         else {
+       *           game.aChooseAndTransfer(player, highest, target, { count: 3 - numTransferred })
+       *           break
+       *         }
+       *       }
+       *
+       *       if (numTransferred && game.getCardsByZone(player, 'hand').length === 0) {
+       *         game.aDraw(player, { age: game.getEffectAge(this, 7) })
+       *       } */
     }
   ]
   this.echoImpl = []

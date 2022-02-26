@@ -686,11 +686,49 @@ Innovation.prototype.aChooseAndAchieve = function(player, choices, opts={}) {
   }
 }
 
-function ChooseAndFactory(manyFuncName) {
-  return function(player, choices, opts={}) {
+Innovation.prototype.kHighest = function(actionName, k, player, cards, ...otherArgs) {
+  actionName = util.toTitleCase(actionName)
+
+  let numRemaining = k
+  let cardsRemaining = [...cards]
+  let selected = []
+
+  while (numRemaining > 0 && cardsRemaining.length > 0) {
+    const highest = this.utilHighestCards(cardsRemaining)
+    cardsRemaining = cardsRemaining.filter(card => !highest.includes(card))
+
+    if (highest.length <= numRemaining) {
+      const actionFuncName = `a${actionName}Many`
+      const acted = this[actionFuncName](player, highest, ...otherArgs)
+      selected = selected.concat(acted)
+      numRemaining -= highest.length
+    }
+    else {
+      const chooseFuncName = `aChooseAnd${actionName}`
+      const acted = this[chooseFuncName](player, highest, ...otherArgs, { count: numRemaining })
+      selected = selected.concat(acted)
+      break
+    }
+  }
+
+  return selected
+}
+
+function ChooseAndFactory(manyFuncName, numArgs) {
+  return function(...args) {
+    const player = args[0]
+    const choices = args[1]
+    const opts = args[numArgs]
+
+    if (opts.count && (opts.highest || opts.lowest)) {
+      console.log('hello')
+    }
+
     const cards = this.aChooseCards(player, choices, opts)
     if (cards) {
-      return this[manyFuncName](player, cards, opts)
+      const actionArgs = [...args]
+      actionArgs[1] = cards
+      return this[manyFuncName](...actionArgs)
     }
     else {
       return []
@@ -698,10 +736,11 @@ function ChooseAndFactory(manyFuncName) {
   }
 }
 
-Innovation.prototype.aChooseAndMeld = ChooseAndFactory('aMeldMany')
-Innovation.prototype.aChooseAndReturn = ChooseAndFactory('aReturnMany')
-Innovation.prototype.aChooseAndScore = ChooseAndFactory('aScoreMany')
-Innovation.prototype.aChooseAndTuck = ChooseAndFactory('aTuckMany')
+Innovation.prototype.aChooseAndMeld = ChooseAndFactory('aMeldMany', 2)
+Innovation.prototype.aChooseAndReturn = ChooseAndFactory('aReturnMany', 2)
+Innovation.prototype.aChooseAndScore = ChooseAndFactory('aScoreMany', 2)
+Innovation.prototype.aChooseAndTransfer = ChooseAndFactory('aTransferMany', 3)
+Innovation.prototype.aChooseAndTuck = ChooseAndFactory('aTuckMany', 2)
 
 Innovation.prototype.aChooseAndSplay = function(player, choices, direction, opts={}) {
   util.assert(direction, 'No direction specified for splay')
@@ -736,16 +775,6 @@ Innovation.prototype.aChooseAndSplay = function(player, choices, direction, opts
   }
   else {
     return this.aSplay(player, colors[0], direction)
-  }
-}
-
-Innovation.prototype.aChooseAndTransfer = function(player, choices, target, opts={}) {
-  const cards = this.aChooseCards(player, choices, opts)
-  if (cards) {
-    return this.aTransferMany(player, cards, target, opts)
-  }
-  else {
-    return []
   }
 }
 

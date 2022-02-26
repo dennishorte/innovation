@@ -1,3 +1,5 @@
+Error.stackTraceLimit = 100
+
 const {
   GameOverEvent,
   InputRequestEvent,

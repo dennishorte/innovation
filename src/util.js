@@ -123,6 +123,14 @@ Util.toKebabCase = function(str) {
   return str.toLowerCase().replace(/\W/g, '-')
 }
 
+Util.toTitleCase = function(str) {
+  return str
+    .toLowerCase()
+    .split()
+    .map(token => token[0].toUpperCase() + token.slice(1))
+    .join(' ')
+}
+
 Util.deepcopy = function(obj) {
   return JSON.parse(JSON.stringify(obj))
 }
