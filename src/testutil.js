@@ -133,6 +133,11 @@ TestUtil.testChoices = function(request, expected, expectedMin, expectedMax) {
     expect(min).toBe(expectedMin)
     expect(max).toBe(expectedMax)
   }
+
+  // This is actually just count
+  else if (expectedMin) {
+    expect(request.selectors[0].count).toBe(expectedMin)
+  }
 }
 
 TestUtil.testIsSecondPlayer = function(request) {
