@@ -1996,14 +1996,27 @@ Innovation.prototype.mMoveByIndices = function(source, sourceIndex, target, targ
   return card
 }
 
-Innovation.prototype.mMoveCardTo = function(card, target) {
+Innovation.prototype.mMoveCardTo = function(card, target, opts={}) {
   if (card.zone === target.id) {
     // Card is already in the target zone.
     return
   }
   const source = this.getZoneByCard(card)
   const sourceIndex = source.cards().findIndex(c => c === card)
-  return this.mMoveByIndices(source, sourceIndex, target, target.cards().length)
+  this.mMoveByIndices(source, sourceIndex, target, target.cards().length)
+
+  if (opts.player) {
+    this.mLog({
+      template: '{player} moves {card} to {zone}',
+      args: {
+        player: opts.player,
+        card,
+        zone: target
+      }
+    })
+  }
+
+  return card
 }
 
 Innovation.prototype.mMoveCardToTop = function(card, target) {
@@ -2236,6 +2249,33 @@ Innovation.prototype.utilEmptyBiscuits = function() {
   }
 }
 
+Innovation.prototype._cardLogData = function(card) {
+  let name
+  if (card.isSpecialAchievement) {
+    name = card.name
+  }
+  else {
+    const hiddenName = this._getHiddenName(card)
+    name = card.visibility.includes(this.viewerName) ? card.name : hiddenName
+  }
+
+  const classes = ['card']
+  if (card.age) {
+    classes.push(`card-age-${card.age}`)
+  }
+  if (card.expansion) {
+    classes.push(`card-exp-${card.expansion}`)
+  }
+  if (name === 'hidden') {
+    classes.push('card-hidden')
+  }
+
+  return {
+    value: name,
+    classes,
+  }
+}
+
 Innovation.prototype.utilEnrichLogArgs = function(msg) {
   for (const key of Object.keys(msg.args)) {
     if (key.startsWith('player')) {
@@ -2245,33 +2285,9 @@ Innovation.prototype.utilEnrichLogArgs = function(msg) {
         classes: ['player-name']
       }
     }
-    else if (key === 'card') {
+    else if (key.startsWith('card')) {
       const card = msg.args[key]
-
-      let name
-      if (card.isSpecialAchievement) {
-        name = card.name
-      }
-      else {
-        const hiddenName = this._getHiddenName(card)
-        name = card.visibility.includes(this.viewerName) ? card.name : hiddenName
-      }
-
-      const classes = ['card']
-      if (card.age) {
-        classes.push(`card-age-${card.age}`)
-      }
-      if (card.expansion) {
-        classes.push(`card-exp-${card.expansion}`)
-      }
-      if (name === 'hidden') {
-        classes.push('card-hidden')
-      }
-
-      msg.args[key] = {
-        value: name,
-        classes,
-      }
+      msg.args[key] = this._cardLogData(card)
     }
     else if (key.startsWith('zone')) {
       const zone = msg.args[key]
@@ -2294,6 +2310,11 @@ Innovation.prototype.utilEnrichLogArgs = function(msg) {
 
 Innovation.prototype.utilHighestCards = function(cards) {
   const sorted = [...cards].sort((l, r) => r.age - l.age)
+  return util.array.takeWhile(sorted, card => card.age === sorted[0].age)
+}
+
+Innovation.prototype.utilLowestCards = function(cards) {
+  const sorted = [...cards].sort((l, r) => l.age - r.age)
   return util.array.takeWhile(sorted, card => card.age === sorted[0].age)
 }
 
