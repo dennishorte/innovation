@@ -711,7 +711,7 @@ Innovation.prototype.aChooseAndSplay = function(player, choices, direction, opts
   }
 
   choices = choices
-    .filter(color => this.getZoneByPlayer(player, color).splay !== opts.direction)
+    .filter(color => this.getZoneByPlayer(player, color).splay !== direction)
     .filter(color => this.getZoneByPlayer(player, color).cards().length > 1)
 
   if (choices.length === 0) {
