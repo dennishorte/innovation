@@ -2056,6 +2056,12 @@ Innovation.prototype.mMoveCardTo = function(card, target, opts={}) {
   return card
 }
 
+Innovation.prototype.mMoveCardsTo = function(player, cards, target) {
+  for (const card of cards) {
+    this.mMoveCardTo(card, target, { player })
+  }
+}
+
 Innovation.prototype.mMoveCardToTop = function(card, target) {
   const source = this.getZoneByCard(card)
   const sourceIndex = source.cards().findIndex(c => c === card)
