@@ -638,7 +638,7 @@ Innovation.prototype.aChooseCards = function(player, cards, opts={}) {
   }
 }
 
-Innovation.prototype.aChoosePlayer = function(player, choices, opts) {
+Innovation.prototype.aChoosePlayer = function(player, choices, opts={}) {
   if (choices.length === 0) {
     this.mLogNoEffect()
     return undefined
@@ -1255,6 +1255,9 @@ Innovation.prototype.aReturn = function(player, card, opts={}) {
 }
 
 Innovation.prototype.aScore = function(player, card, opts={}) {
+  if (card === undefined) {
+    return
+  }
   const karmaKind = this.aKarma(player, 'score', { ...opts, card })
   if (karmaKind === 'would-instead') {
     return
