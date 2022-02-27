@@ -686,32 +686,35 @@ Innovation.prototype.aChooseAndAchieve = function(player, choices, opts={}) {
   }
 }
 
-Innovation.prototype.kHighest = function(actionName, k, player, cards, ...otherArgs) {
-  actionName = util.toTitleCase(actionName)
-
-  let numRemaining = k
+Innovation.prototype.aChooseByPredicate = function(player, cards, count, pred) {
+  let numRemaining = count
   let cardsRemaining = [...cards]
   let selected = []
 
   while (numRemaining > 0 && cardsRemaining.length > 0) {
-    const highest = this.utilHighestCards(cardsRemaining)
-    cardsRemaining = cardsRemaining.filter(card => !highest.includes(card))
+    const choices = pred(cardsRemaining)
+    cardsRemaining = cardsRemaining.filter(card => !choices.includes(card))
 
-    if (highest.length <= numRemaining) {
-      const actionFuncName = `a${actionName}Many`
-      const acted = this[actionFuncName](player, highest, ...otherArgs)
-      selected = selected.concat(acted)
-      numRemaining -= highest.length
+    if (choices.length <= numRemaining) {
+      selected = selected.concat(choices)
+      numRemaining -= choices.length
     }
     else {
-      const chooseFuncName = `aChooseAnd${actionName}`
-      const acted = this[chooseFuncName](player, highest, ...otherArgs, { count: numRemaining })
-      selected = selected.concat(acted)
-      break
+      const chosen = this.aChooseCards(player, choices, { count: numRemaining })
+      selected = selected.concat(chosen)
+      numRemaining -= chosen.length
     }
   }
 
   return selected
+}
+
+Innovation.prototype.aChooseHighest = function(player, cards, count) {
+  return this.aChooseByPredicate(player, cards, count, this.utilHighestCards)
+}
+
+Innovation.prototype.aChooseLowest = function(player, cards, count) {
+  return this.aChooseByPredicate(player, cards, count, this.utilLowestCards)
 }
 
 function ChooseAndFactory(manyFuncName, numArgs) {
