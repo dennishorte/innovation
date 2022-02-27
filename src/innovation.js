@@ -650,7 +650,7 @@ Innovation.prototype.aChoosePlayer = function(player, choices, opts) {
 
   const playerNames = this.requestInputSingle({
     actor: player.name,
-    title: 'Choose a Player',
+    title: opts.title || 'Choose a Player',
     choices,
     ...opts,
   })
