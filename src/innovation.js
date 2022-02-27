@@ -1671,6 +1671,12 @@ Innovation.prototype.getPlayerByZone = function(zone) {
   return this.getPlayerByName(match[1])
 }
 
+Innovation.prototype.getPlayerTeam = function(player) {
+  return this
+    .getPlayerAll()
+    .filter(p => this.checkSameTeam(p, player))
+}
+
 Innovation.prototype.getPlayerOpponents = function(player) {
   return this
     .getPlayerAll()
