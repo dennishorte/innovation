@@ -1281,6 +1281,10 @@ Innovation.prototype.aSplay = function(player, color, direction, opts={}) {
 }
 
 Innovation.prototype.aTransfer = function(player, card, target, opts={}) {
+  if (target.toBoard) {
+    target = this.getZoneByPlayer(target.player, card.color)
+  }
+
   const karmaKind = this.aKarma(player, 'transfer', { ...opts, card, target })
   if (karmaKind === 'would-instead') {
     return
@@ -1323,14 +1327,15 @@ Innovation.prototype.aYesNo = function(player, title) {
   return result === 'yes'
 }
 
-function ManyFactory(baseFuncName) {
+function ManyFactory(baseFuncName, extraArgCount=0) {
   return function(...args) { //player, cards, opts={}) {
     const player = args[0]
     const cards = args[1]
+    const opts = args[2 + extraArgCount] || {}
 
     const results = []
     let remaining = [...cards]
-    let auto = false
+    let auto = opts.ordered || false
     while (remaining.length > 0) {
       let next
       if (auto || remaining.length === 1) {
@@ -1361,7 +1366,7 @@ Innovation.prototype.aMeldMany = ManyFactory('aMeld')
 Innovation.prototype.aRemoveMany = ManyFactory('aRemove')
 Innovation.prototype.aReturnMany = ManyFactory('aReturn')
 Innovation.prototype.aScoreMany = ManyFactory('aScore')
-Innovation.prototype.aTransferMany = ManyFactory('aTransfer')
+Innovation.prototype.aTransferMany = ManyFactory('aTransfer', 1)
 Innovation.prototype.aTuckMany = ManyFactory('aTuck')
 
 
