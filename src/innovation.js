@@ -1640,6 +1640,12 @@ Innovation.prototype.getPlayerAll = function() {
   return this.state.players
 }
 
+Innovation.prototype.getPlayerOther = function(player) {
+  return this
+    .getPlayerAll()
+    .filter(other => other !== player)
+}
+
 Innovation.prototype.getPlayerByCard = function(card) {
   const zone = this.getZoneById(card.zone)
   return this.getPlayerByZone(zone)
